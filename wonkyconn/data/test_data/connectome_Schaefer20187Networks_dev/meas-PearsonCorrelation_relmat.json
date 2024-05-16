@@ -1,0 +1,10 @@
+{
+    "Measure": "Pearson correlation",
+    "MeasureDescription": "Pearson correlation",
+    "Weighted": false,
+    "Directed": false,
+    "ValidDiagonal": true,
+    "StorageFormat": "Full",
+    "NonNegative": "",
+    "Code": "https://github.com/bids-apps/giga_connectome.git"
+}
