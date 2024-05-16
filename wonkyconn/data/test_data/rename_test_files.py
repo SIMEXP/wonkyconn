@@ -20,7 +20,7 @@ for file in files:
     if "json" in suffix:
         # make up some content for the json file
         meta = {
-            "MeanFrameWiseDisplacement": 0.03,
+            "MeanFramewiseDisplacement": 0.03,
             "ConfoundRegressors": ["csf", "white_matter", "grey_matter","cosine00", "cosine01", "cosine02", "cosine03", "trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
             "NumberOfVolumesDiscardedByMotionScrubbing": 0,
             "NumberOfVolumesDiscardedByNonsteadyStatesDetector": 5,
