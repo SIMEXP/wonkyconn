@@ -11,6 +11,7 @@ files = giga_connectome_output.glob("sub-*/ses-*/func/*")
 
 for file in files:
     root = file.name.split("space-")[0]
+    root_with_space = file.name.split("atlas-")[0]
     atlas = file.name.split("atlas-")[-1]
     suffix = file.name.split("_")[-1]
     atlas = atlas.split("_")[0]
@@ -48,17 +49,17 @@ for file in files:
     file.rename(subject_dir / new_name)
 
 # rename the working_dir
-(giga_connectome_output / "working_dir" / "groupmasks").rename(giga_connectome_output / "atlases")
-(giga_connectome_output / "atlases" / "tpl-MNI152NLin2009cAsym").rename(giga_connectome_output / "atlases" / "sub-1")
-(giga_connectome_output / "working_dir").rmdir()
-working_dir = giga_connectome_output / "atlases" / "sub-1"
+(giga_connectome_output / "working_dir").rename(giga_connectome_output / "atlases")
+(giga_connectome_output / "atlases" / "groupmasks").rename(giga_connectome_output / "atlases" / "sub-1")
+(giga_connectome_output / "atlases" / "sub-1" / "tpl-MNI152NLin2009cAsym" ).rename(giga_connectome_output / "atlases" / "sub-1" / "func")
+working_dir = giga_connectome_output / "atlases" / "sub-1" / "func"
 
 # working_dir = giga_connectome_output / "working_dir" / "groupmasks" / "tpl-MNI152NLin2009cAsym"
 files = working_dir.glob("*.nii.gz")
-sub = root.split("_")[0]
-space = root.split("space-")[-1].split("_")[0]
-res = root.split("res-")[-1].split("_")[0]
-root = f"{sub}_space-{space}_res-{res}"
+sub = root_with_space.split("_")[0]
+space = root_with_space.split("space-")[-1].split("_")[0]
+res = root_with_space.split("res-")[-1].split("_")[0]
+root_with_space = f"{sub}_space-{space}_res-{res}"
 
 for file in files:
     suffix = file.name.split("_")[-1]
@@ -66,9 +67,9 @@ for file in files:
         atlas = file.name.split("atlas-")[1].split("_")[0]
         n_parcel = file.name.split("desc-")[1].split("7Networks")[0]
         seg = atlas + n_parcel
-        new_name = f"{root}_seg-{seg}_{suffix}"
+        new_name = f"{sub}_seg-{seg}_{suffix}"
     else:
-        new_name = file.name.replace("tpl-MNI152NLin2009cAsym", root)
+        new_name = file.name.replace("tpl-MNI152NLin2009cAsym", root_with_space)
         new_name = new_name.replace("_res-dataset", "")
         new_name = new_name.replace("_desc-group", "")
     file.rename(working_dir / new_name)
