@@ -26,12 +26,17 @@ def calculate_qcfc(
     accounted for participant age and sex
 
     Parameters:
-        data_frame (pd.DataFrame): The data frame containing the covariates "age" and "gender". It needs to have one row for each connectivity matrix.
-        connectivity_matrices (Iterable[ConnectivityMatrix]): The connectivity matrices to calculate QCFC for.
-        metric_key (str, optional): The key of the metric to use for QCFC calculation. Defaults to "MeanFramewiseDisplacement".
+        data_frame (pd.DataFrame): The data frame containing the covariates
+            "age" and "gender". It needs to have one row for each
+            connectivity matrix.
+        connectivity_matrices (Iterable[ConnectivityMatrix]): The
+            connectivity matrices to calculate QCFC for.
+        metric_key (str, optional): The key of the metric to use for QCFC
+            calculation. Defaults to "MeanFramewiseDisplacement".
 
     Returns:
-        pd.DataFrame: The QCFC values between connectivity matrices and the metric.
+        pd.DataFrame: The QCFC values between connectivity matrices and
+            the metric.
 
     """
     metrics = np.asarray(
@@ -45,7 +50,9 @@ def calculate_qcfc(
     connectivity_arrays = [
         connectivity_matrix.load()
         for connectivity_matrix in tqdm(
-            connectivity_matrices, desc="Loading connectivity matrices", leave=False
+            connectivity_matrices,
+            desc="Loading connectivity matrices",
+            leave=False,
         )
     ]
 
@@ -64,19 +71,21 @@ def calculate_qcfc(
 
     p_value = correlation_p_value(correlation, m)
 
-    qcfc = pd.DataFrame(dict(i=i, j=j, correlation=correlation, p_value=p_value))
+    qcfc = pd.DataFrame(
+        dict(i=i, j=j, correlation=correlation, p_value=p_value)
+    )
     qcfc = qcfc.set_index(["i", "j"])
 
     return qcfc
 
 
-def calculate_median_absolute(x: pd.Series) -> float:
+def calculate_median_absolute(x: pd.Series[float]) -> float:
     """Calculate Absolute median value"""
     return x.abs().median()
 
 
 def significant_level(
-    x: pd.Series, alpha: float = 0.05, correction: str | None = None
+    x: pd.Series[float], alpha: float = 0.05, correction: str | None = None
 ) -> npt.NDArray[np.bool_]:
     """
     Apply FDR correction to a pandas.Series p-value object.
@@ -92,7 +101,7 @@ def significant_level(
 
     method : None or str
         Default as None for no multiple comparison
-        Mutiple comparison methods.
+        Multiple comparison methods.
         See statsmodels.stats.multitest.multipletests
 
     Returns

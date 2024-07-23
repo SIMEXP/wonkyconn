@@ -18,7 +18,7 @@ def gc_logger(log_level: str = "INFO") -> logging.Logger:
         handlers=[RichHandler()],
     )
 
-    return logging.getLogger("giga_connectome")
+    return logging.getLogger("wonkyconn")
 
 
 gc_log = gc_logger()

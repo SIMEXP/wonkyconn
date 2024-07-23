@@ -12,7 +12,8 @@ def global_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description=(
-            "Evaluating the residual motion in fMRI connectome and visualize reports"
+            "Evaluating the residual motion in fMRI connectome and visualize "
+            "reports per segmentation per denoising strategy."
         ),
     )
 
@@ -41,13 +42,19 @@ def global_parser() -> argparse.ArgumentParser:
         "--group-by",
         type=str,
         nargs="+",
-        default=["seg"],
-        help="Select which tags to group the connectivity matrices by. Default is `seg`.",
+        help=(
+            "Select which entities to group the connectivity matrices by "
+            "(e.g. `sub`, `ses`, `task`)."
+        ),
+        required=False,
     )
     parser.add_argument(
         "--phenotypes",
         type=str,
-        help="Path to the phenotype file that has the columns `participant_id`, `gender` coded as `M` and `F` and `age` in years.",
+        help=(
+            "Path to the phenotype file that has the columns `participant_id`,"
+            " `gender` coded as `M` and `F` and `age` in years."
+        ),
         required=True,
     )
     parser.add_argument(
@@ -57,10 +64,15 @@ def global_parser() -> argparse.ArgumentParser:
         action="append",
         metavar=("SEG", "ATLAS"),
         default=list(),
-        help="Specify the atlas file to use for a segmentation label in the data",
+        help=(
+            "Specify the atlas file to use for a segmentation label in the "
+            "data"
+        ),
     )
 
-    parser.add_argument("-v", "--version", action="version", version=__version__)
+    parser.add_argument(
+        "-v", "--version", action="version", version=__version__
+    )
     parser.add_argument("--debug", action="store_true", default=False)
     parser.add_argument(
         "--verbosity",
