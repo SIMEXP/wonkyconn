@@ -13,7 +13,7 @@ palette = sns.color_palette(n_colors=6)
 matplotlib.rcParams["font.family"] = "DejaVu Sans"
 
 
-def _make_group_label(group_by: list[str], values: pd.Series) -> str:
+def _make_group_label(group_by: list[str], values: pd.Series[str]) -> str:
     label: str = ""
     for a, b in zip(group_by, values, strict=True):
         if label:
@@ -22,17 +22,23 @@ def _make_group_label(group_by: list[str], values: pd.Series) -> str:
     return label
 
 
-def plot(result_frame: pd.DataFrame, group_by: list[str], output_dir: Path) -> None:
+def plot(
+    result_frame: pd.DataFrame, group_by: list[str], output_dir: Path
+) -> None:
     """
     Plot all three metrics based on the given result data frame.
 
     Args:
-        result_frame (pd.DataFrame): The DataFrame containing the the columns "median_absolute_qcfc",
-            "percentage_significant_qcfc", "distance_dependence", "confound_regression_percentage",
-            "motion_scrubbing_percentage", and "nonsteady_states_detector_percentage", and the
-            columns in the `group_by` variable.
-        group_by (list[str]): The list of columns that the results are grouped by.
-        output_dir (Path): The directory to save the plot image into as "metrics.png".
+        result_frame (pd.DataFrame): The DataFrame containing the the columns
+            "median_absolute_qcfc", "percentage_significant_qcfc",
+            "distance_dependence", "confound_regression_percentage",
+            "motion_scrubbing_percentage", and
+            "nonsteady_states_detector_percentage", and the columns in the
+            `group_by` variable.
+        group_by (list[str]): The list of columns that the results are
+            grouped by.
+        output_dir (Path): The directory to save the plot image into as
+            "metrics.png".
 
     Returns:
         None
@@ -60,7 +66,9 @@ def plot(result_frame: pd.DataFrame, group_by: list[str], output_dir: Path) -> N
         color=palette[0],
         ax=median_absolute_qcfc_axes,
     )
-    median_absolute_qcfc_axes.set_title("Median absolute value of QC-FC correlations")
+    median_absolute_qcfc_axes.set_title(
+        "Median absolute value of QC-FC correlations"
+    )
     median_absolute_qcfc_axes.set_xlabel("Median absolute value")
     median_absolute_qcfc_axes.set_ylabel("Group")
 
@@ -93,7 +101,7 @@ def plot(result_frame: pd.DataFrame, group_by: list[str], output_dir: Path) -> N
 
 def plot_degrees_of_freedom_loss(
     result_frame: pd.DataFrame,
-    group_labels: pd.Series,
+    group_labels: pd.Series[str],
     degrees_of_freedom_loss_axes: Axes,
     legend_axes: Axes,
 ) -> None:
@@ -116,9 +124,18 @@ def plot_degrees_of_freedom_loss(
         color=colors[2],
         ax=degrees_of_freedom_loss_axes,
     )
-    degrees_of_freedom_loss_axes.set_title("Percentage of degrees of freedom lost")
+    degrees_of_freedom_loss_axes.set_title(
+        "Percentage of degrees of freedom lost"
+    )
     degrees_of_freedom_loss_axes.set_xlabel("Percentage %")
-    labels = ["Confounds regression", "Motion scrubbing", "Non-steady states detector"]
-    handles = [mpatches.Patch(color=c, label=label) for c, label in zip(colors, labels)]
+    labels = [
+        "Confounds regression",
+        "Motion scrubbing",
+        "Non-steady states detector",
+    ]
+    handles = [
+        mpatches.Patch(color=c, label=label)
+        for c, label in zip(colors, labels)
+    ]
     legend_axes.legend(handles=handles)
     legend_axes.axis("off")

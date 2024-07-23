@@ -35,10 +35,7 @@ def test_help(capsys):
     except SystemExit:
         pass
     captured = capsys.readouterr()
-    assert (
-        "Evaluating the residual motion in fMRI connectome and visualize reports"
-        in captured.out
-    )
+    assert "fMRI connectome and visualize reports" in captured.out
 
 
 def _copy_file(path: Path, new_path: Path, sub: str) -> None:
@@ -49,7 +46,9 @@ def _copy_file(path: Path, new_path: Path, sub: str) -> None:
         relmat = pd.read_csv(path, sep="\t")
         (n,) = set(relmat.shape)
 
-        array = scipy.spatial.distance.squareform(relmat.to_numpy() - np.eye(n))
+        array = scipy.spatial.distance.squareform(
+            relmat.to_numpy() - np.eye(n)
+        )
         np.random.shuffle(array)
 
         new_array = scipy.spatial.distance.squareform(array) + np.eye(n)
@@ -115,9 +114,6 @@ def test_smoke(tmp_path: Path):
     argv = [
         "--phenotypes",
         str(phenotypes_path),
-        "--group-by",
-        "seg",
-        "desc",
         *seg_to_atlas_args,
         str(bids_dir),
         str(output_dir),

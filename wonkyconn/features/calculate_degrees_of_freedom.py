@@ -23,7 +23,8 @@ def calculate_degrees_of_freedom_loss(
     Calculate the percent of degrees of freedom lost during denoising.
 
     Parameters:
-    - bids_file (BIDSFile): The BIDS file for which to calculate the degrees of freedom.
+    - bids_file (BIDSFile): The BIDS file for which to calculate the
+        degrees of freedom.
 
     Returns:
     - float: The percentage of degrees of freedom lost.
@@ -50,7 +51,9 @@ def calculate_degrees_of_freedom_loss(
 
 
 def _calculate_for_key(
-    connectivity_matrices: list[ConnectivityMatrix], count: list[int], key: str
+    connectivity_matrices: list[ConnectivityMatrix],
+    count: npt.NDArray[np.int64],
+    key: str,
 ) -> float:
     values: Sequence[int | list[str] | None] = [
         connectivity_matrix.metadata.get(key, None)
