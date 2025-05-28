@@ -70,7 +70,7 @@ def _copy_file(path: Path, new_path: Path, sub: str) -> None:
 def test_smoke(tmp_path: Path):
     data_path = Path(
         resource_filename(
-            "wonkyconn", "data/test_data/connectome_Schaefer20187Networks_dev"
+            "wonkyconn", "data/test_data/connectome_Schaefer2018"
         )
     )
 

@@ -50,7 +50,7 @@ jobs:
     - uses: actions/cache@v4
       id: cache
       env:
-        cache-name: ds000017
+        cache-name: smoke_test_data
       with:
         path: /home/runner/work/wonkyconn/wonkyconn/wonkyconn/data/test_data
         key: ${{ env.cache-name }}
