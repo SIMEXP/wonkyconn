@@ -27,14 +27,17 @@ from .visualization.plot import plot
 def workflow(args: argparse.Namespace) -> None:
     set_verbosity(args.verbosity)
     gc_log.info(vars(args))
-
+    
+    # Check BIDS path
     bids_dir = args.bids_dir
     index = BIDSIndex()
     index.put(bids_dir)
-
+    
+    # Check output path
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-
+    
+    # Load data frame
     data_frame = load_data_frame(args)
 
     # Load atlases
