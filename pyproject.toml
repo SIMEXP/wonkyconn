@@ -24,7 +24,7 @@ dependencies = [
   "numba",
   "seaborn",
   "matplotlib",
-  "statsmodels", 
+  "statsmodels",
 ]
 dynamic = ["version"]
 
@@ -96,6 +96,8 @@ module = [
   "seaborn.*",
   "statsmodels.*",
   "templateflow.*",
+  "pyrsistent.*",
+  "nibabel.*",
 ]
 
 [[tool.mypy.overrides]]

@@ -3,7 +3,9 @@ import json
 
 atlas_collection = "Schaefer20187Networks"
 denoise = "Simple"
-giga_connectome_output = Path(__file__).parent / "connectome_Schaefer20187Networks_dev"
+giga_connectome_output = (
+    Path(__file__).parent / "connectome_Schaefer20187Networks_dev"
+)
 
 
 # rename the files
@@ -21,7 +23,21 @@ for file in files:
         # make up some content for the json file
         meta = {
             "MeanFramewiseDisplacement": 0.03,
-            "ConfoundRegressors": ["csf", "white_matter", "grey_matter","cosine00", "cosine01", "cosine02", "cosine03", "trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
+            "ConfoundRegressors": [
+                "csf",
+                "white_matter",
+                "grey_matter",
+                "cosine00",
+                "cosine01",
+                "cosine02",
+                "cosine03",
+                "trans_x",
+                "trans_y",
+                "trans_z",
+                "rot_x",
+                "rot_y",
+                "rot_z",
+            ],
             "NumberOfVolumesDiscardedByMotionScrubbing": 0,
             "NumberOfVolumesDiscardedByNonsteadyStatesDetector": 5,
         }
@@ -36,22 +52,32 @@ for file in files:
     if "desc" not in file.name:
         new_name = f"{root}desc-denoise{denoise}_{suffix}"
     else:
-        n_parcel, denoise_strategy = file.name.split("desc-")[1].split("7Networks")
+        n_parcel, denoise_strategy = file.name.split("desc-")[1].split(
+            "7Networks"
+        )
         denoise_strategy = denoise_strategy.split("_")[0]
         seg = atlas + n_parcel
         desc = denoise_strategy
         if "meas" in file.name:
             meas = file.name.split("meas-")[1].split("_")[0]
-            new_name = f"{root}seg-{seg}_meas-{meas}_desc-denoise{desc}_{suffix}"
+            new_name = (
+                f"{root}seg-{seg}_meas-{meas}_desc-denoise{desc}_{suffix}"
+            )
         else:
             new_name = f"{root}seg-{seg}_desc-denoise{desc}_{suffix}"
 
     file.rename(subject_dir / new_name)
 
 # rename the working_dir
-(giga_connectome_output / "working_dir").rename(giga_connectome_output / "atlases")
-(giga_connectome_output / "atlases" / "groupmasks").rename(giga_connectome_output / "atlases" / "sub-1")
-(giga_connectome_output / "atlases" / "sub-1" / "tpl-MNI152NLin2009cAsym" ).rename(giga_connectome_output / "atlases" / "sub-1" / "func")
+(giga_connectome_output / "working_dir").rename(
+    giga_connectome_output / "atlases"
+)
+(giga_connectome_output / "atlases" / "groupmasks").rename(
+    giga_connectome_output / "atlases" / "sub-1"
+)
+(
+    giga_connectome_output / "atlases" / "sub-1" / "tpl-MNI152NLin2009cAsym"
+).rename(giga_connectome_output / "atlases" / "sub-1" / "func")
 working_dir = giga_connectome_output / "atlases" / "sub-1" / "func"
 
 # working_dir = giga_connectome_output / "working_dir" / "groupmasks" / "tpl-MNI152NLin2009cAsym"
@@ -69,7 +95,9 @@ for file in files:
         seg = atlas + n_parcel
         new_name = f"{sub}_seg-{seg}_{suffix}"
     else:
-        new_name = file.name.replace("tpl-MNI152NLin2009cAsym", root_with_space)
+        new_name = file.name.replace(
+            "tpl-MNI152NLin2009cAsym", root_with_space
+        )
         new_name = new_name.replace("_res-dataset", "")
         new_name = new_name.replace("_desc-group", "")
     file.rename(working_dir / new_name)

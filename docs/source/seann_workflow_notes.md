@@ -109,10 +109,20 @@ ModuleNotFoundError: No module named 'statsmodels'
 
 # patricipants.tsv needs to be properly formatted
 - see prepare_participantstsv.py for quick conversion script.
-- note: participants.tsv files can vary widely and prepare_participantstsv.py cannot handle all cases. Please visually inspect the participants.tsv and change it if needed to the formatting described above in Data Preperation. 
+- note: participants.tsv files can vary widely and prepare_participantstsv.py cannot handle all cases. Please visually inspect the participants.tsv and change it if needed to the formatting described above in Data Preparation.
 
 # code does not grab subjects from participants tsv with 'sub-' tag
 - Fix: see changes to make_record in workflow.py
 
 # code does not grab matrices corresponding to the specific atlas passed to the CLI
-- Fix: see modifications to workflow.py, filtering connectivity matrix loaded from input path for only the specified atlas. all other relmat files from other atlas are not loaded. 
+- Fix: see modifications to workflow.py, filtering connectivity matrix loaded from input path for only the specified atlas. all other relmat files from other atlas are not loaded.
+
+
+
+# Pre-commit version issue with compute canada
+- Currently we use pre-commit version: 4.2.0+computecanada
+- This breaks because of the +computecanada tag. ValueError: invalid literal for int() with base 10: '0+computecanada'
+
+- Fix: we force reinstall directly from the source using this command:
+    pip uninstall -y pre-commit
+    pip install git+https://github.com/pre-commit/pre-commit.git@v4.2.0
