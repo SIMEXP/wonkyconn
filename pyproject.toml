@@ -24,6 +24,7 @@ dependencies = [
   "numba",
   "seaborn",
   "matplotlib",
+  "statsmodels", 
 ]
 dynamic = ["version"]
 
@@ -41,6 +42,7 @@ dev = [
   "types-all",
   "pandas-stubs",
   "types-tqdm",
+  "statsmodels",
 ]
 test = ["nibabel", "nilearn", "pytest", "pytest-cov", "templateflow < 23.0.0"]
 docs = ["sphinx", "sphinx_rtd_theme", "myst-parser", "sphinx-argparse"]
