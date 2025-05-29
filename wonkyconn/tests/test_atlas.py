@@ -59,7 +59,7 @@ def test_probseg_atlas() -> None:
     path = get_template(
         template="MNI152NLin2009cAsym",
         atlas="DiFuMo",
-        desc="256dimensionsSegmented",  # or 64, 1024, …
+        desc="256dimensions",  # or 64, 1024, …
         suffix="probseg",
         resolution=3,  # matches “res-03”
         extension=".nii.gz",
