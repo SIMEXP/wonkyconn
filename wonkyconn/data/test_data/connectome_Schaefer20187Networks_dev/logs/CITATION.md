@@ -22,5 +22,3 @@ The following steps were followed.
         - standardized (using zscore)
     - Extracted time series from atlas
     - Computed correlation matrix (Pearson's correlation with LedoitWolf covariance estimator)
-
-
