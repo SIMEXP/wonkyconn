@@ -19,7 +19,7 @@ dependencies = [
   "numpy",
   "scipy",
   "patsy",
-  "pandas",
+  "pandas>=2.0",
   "rich",
   "numba",
   "seaborn",
