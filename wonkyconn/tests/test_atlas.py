@@ -56,11 +56,13 @@ def _get_centroids(path: Path):
 
 
 def test_probseg_atlas() -> None:
-    path = Path(
-        resource_filename(
-            "wonkyconn",
-            "data/test_data/tpl-MNI152NLin2009cAsym_res-03_atlas-DiFuMo_desc-64dimensionsSegmented_probseg.nii.gz",
-        )
+    path = get_template(
+        template="MNI152NLin2009cAsym",
+        atlas="DiFuMo",
+        desc="256dimensionsSegmented",  # or 64, 1024, …
+        suffix="probseg",
+        resolution=3,  # matches “res-03”
+        extension=".nii.gz",
     )
     assert isinstance(path, Path)
 
