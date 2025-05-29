@@ -105,7 +105,7 @@ def make_record(
     # seann: added sub- tag when looking up subjects only if sub- is not already present
     seg_subjects = []
     for c in connectivity_matrices:
-        sub = index.get_tag_value(c.path, "sub")   # returns either "2" or "sub-2"
+        sub = index.get_tag_value(c.path, "sub")  # returns either "2" or "sub-2"
         if not str(sub).startswith("sub-"):
             sub = f"sub-{sub}"
         seg_subjects.append(sub)
