@@ -73,7 +73,7 @@ def test_smoke(tmp_path: Path):
     output_dir = tmp_path / "output"
     output_dir.mkdir()
 
-    subjects = ["2", "3", "4", "5", "6", "7"]
+    subjects = [f"sub-{i}" for i in ["2", "3", "4", "5", "6", "7"]]
 
     paths = list(data_path.glob("**/*"))
     for path in tqdm(paths, desc="Generating test data"):
