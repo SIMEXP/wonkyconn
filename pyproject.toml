@@ -53,7 +53,7 @@ tests = ["wonkyconn[test]"]
 
 [tool.hatch.version]
 source = "vcs"
-fallback-version = "0.0.0+ci"   # <-- anything PEP 440-valid works
+fallback-version = "0.0.0+ci"   # <-- tmp fallback version for CI
 
 [tool.hatch.build.hooks.vcs]
 version-file = "wonkyconn/_version.py"
