@@ -56,6 +56,7 @@ def _get_centroids(path: Path):
 
 
 def test_probseg_atlas() -> None:
+    "TODO: @haoting wants to revisit this test, to check if the assertion values make sense"
     path = get_template(
         template="MNI152NLin2009cAsym",
         atlas="DiFuMo",
