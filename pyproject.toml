@@ -4,7 +4,6 @@ build-backend = "hatchling.build"
 
 [project]
 name = "wonkyconn"
-version = "0.1.0"  # <== Add this line
 description = "Evaluating the residual motion in fMRI connectome and visualise reports."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -51,6 +50,12 @@ tests = ["wonkyconn[test]"]
 [project.urls]
 "Homepage" = "https://github.com/SIMEXP/wonkyconn"
 "Documentation" = "https://wonkyconn.readthedocs.io/en/latest/"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "wonkyconn/_version.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [".git_archival.txt"]
