@@ -39,10 +39,8 @@ dev = [
   "wonkyconn[test]",
   "tox",
   "mypy",
-  "types-all",
   "pandas-stubs",
   "types-tqdm",
-  "statsmodels",
 ]
 test = ["nibabel", "nilearn", "pytest", "pytest-cov", "templateflow < 23.0.0"]
 docs = ["sphinx", "sphinx_rtd_theme", "myst-parser", "sphinx-argparse"]
