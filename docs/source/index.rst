@@ -15,6 +15,7 @@ Boom
    installation.md
    usage.md
    workflow.md
+   seann_workflow_notes.md
    outputs.md
 
 .. toctree::
