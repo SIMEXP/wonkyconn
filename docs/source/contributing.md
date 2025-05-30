@@ -21,7 +21,7 @@ source wonkyconn/bin/activate
 pip install -e .[dev]
 ```
 
-4.. Install the data required for testing from zenodo
+4. Install the data required for testing from zenodo
 
 This can be done using tox by running:
 
@@ -29,7 +29,7 @@ This can be done using tox by running:
 tox -e test_data
 ```
 
-6. Install pre-commit hooks to run all the checks before each commit.
+5. Install pre-commit hooks to run all the checks before each commit.
 
 ```bash
 pre-commit install
