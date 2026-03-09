@@ -20,6 +20,5 @@ fmriprep.egg-info
 .git/datalad
 .git/objects
 
-wonkyconn/data/atlases
 wonkyconn/data/giga_connectome
 wonkyconn/data/halfpipe
