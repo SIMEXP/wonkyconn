@@ -9,7 +9,7 @@ abstract:
 
 message: "If you use this software, please cite it as below."
 
-repository-code: "https://github.com/simexp/wonkyconn"
+repository-code: "https://github.com/HALFpipe/wonkyconn"
 
 contact:
   - email: htwangtw@gmail.com
