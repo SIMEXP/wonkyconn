@@ -1,14 +1,15 @@
-# Contribution
+# Contributing
 
-## Setting up your environment for development
+## Development environment
 
-1. Fork the repository from github and clone your fork locally (see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) to setup your ssh key):
+Fork the repository from github and clone your fork locally (see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) to setup your ssh key):
 
 ```bash
 git clone git@github.com:<your_username>/wonkyconn.git
+cd wonkyconn
 ```
 
-2. Set up a development environment. We recommend using [pixi](https://pixi.sh):
+Set up a development environment. We recommend using [pixi](https://pixi.sh):
 
 ```bash
 pixi install
@@ -17,74 +18,107 @@ pixi install
 Alternatively, you can use a virtual environment with pip:
 
 ```bash
-python3 -m venv wonkyconn
-source wonkyconn/bin/activate
-pip install -e ".[dev]"
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev,docs]"
 ```
 
-3. Install the data required for testing.
-
-The test data is managed with [datalad](https://www.datalad.org/). After installing datalad, fetch the test data:
-
-```bash
-datalad get wonkyconn/data/test_data
-```
-
-4. Install pre-commit hooks to run all the checks before each commit.
+Install pre-commit hooks to automatically format code and run checks before each commit:
 
 ```bash
 pre-commit install
 ```
 
+## Downloading test data
+
+Fetch light smoke-test data:
+
+```bash
+datalad get -r data/halfpipe data/atlases
+```
+
+Fetch BEP017-style, heavy smoke-test data:
+
+```bash
+datalad get -r data/giga_connectome/connectome_Schaefer20187Networks_dev
+```
+
+### Demo command
+
+Light-mode demo:
+
+```bash
+wonkyconn data/halfpipe test-output group \
+    --phenotypes data/halfpipe/participants.tsv \
+    --atlas Schaefer2018Combined data/atlases/atlas-Schaefer2018Combined_dseg.nii.gz \
+    --light-mode \
+    --verbosity 2
+```
+
 ## Contributing to code
 
-This is a very generic workflow.
+We use a common [feature branch workflow](https://www.python4data.science/en/latest/productive/git/workflows/feature-branches.html) for development.
 
 1. Comment on an existing issue or open a new issue referencing your addition.
 
-:::{tip}
-Review and discussion on new code can begin well before the work is complete, and the more discussion the better!
-The development team may prefer a different path than you've outlined, so it's better to discuss it and get approval at the early stage of your work.
-:::
+    > [!tip]
+    > Review and discussion on new code can begin well before the work is complete, and the more discussion the better! The development team may prefer a different path than you’ve outlined, so it’s better to discuss it and get approval at the early stage of your work.
 
-2. On your fork, create a new branch from main:
+1. Create a new branch from `main`:
+
+    ```bash
+    git switch -c my_feature main
+    ```
+
+1. Make the changes in your branch.
+1. Run the tests locally to confirm your changes don’t break anything. See the [Testing](#running-tests) section below for details.
+1. Push your branch to your fork.
+
+    > [!caution]
+    > If this is the first commit, you might want to set up the remote tracking.
+    >
+    > ```bash
+    > git push origin HEAD --set-upstream
+    > ```
+
+1. Submit a pull request to the `main` branch of the original repository; follow the guidelines in the [Pull requests](#pull-requests-guidelines) section below.
+1. Check that all continuous integration checks pass. If not, review the logs to identify and fix the issue.
+1. Respond to any review comments and make necessary changes.
+
+(running-tests)=
+
+### Running tests
+
+Default unit tests:
 
 ```bash
-git checkout -b your_branch
+pixi run unittest
 ```
 
-3. Make the changes, lint, and format.
-
-4. Commit your changes on this branch.
-
-If you want to make sure all the tests will be run by github continuous integration,
-make sure that your commit message contains `full_test`.
-
-5. Run the tests locally; you can run specific tests to speed up the process:
+Light smoke tests:
 
 ```bash
-pytest -v wonkyconn/tests/test_connectome.py::test_calculate_intranetwork_correlation
+pixi run smoketestlight
 ```
 
-6. push your changes to your online fork. If this is the first commit, you might want to set up the remote tracking:
+Full non-smoke selection:
 
 ```bash
-git push origin HEAD --set-upstream
+pixi run fulltest
 ```
-In the future you can simply do:
+
+Specific pytest file:
 
 ```bash
-git push
+pytest -v wonkyconn/tests/test_correlation.py
 ```
-7. Submit a pull request from your fork of the repository.
 
-8. Check that all continuous integration tests pass.
+Learn more about [specifying which test to run](https://docs.pytest.org/en/stable/how-to/usage.html#select-tests)
 
-## Contributing to documentation
+### Building the docs
 
-The workflow is the same as code contributions, with some minor differences.
-
-1. Install the `docs` dependencies.
+You can build the documentation locally to review your changes before pushing.
+The documentation is built at `docs/build/html`.
 
 Using pixi:
 
@@ -92,71 +126,44 @@ Using pixi:
 pixi run -e docs sphinx-build docs/source docs/build/html
 ```
 
-Or with pip:
+or with a local Python environment:
 
 ```bash
-pip install -e ".[docs]"
 cd docs
 make html
 ```
 
-2. After making changes, review the generated HTML locally.
+(pull-requests-guidelines)=
 
-3. Submit your changes.
+## Pull requests guidelines
 
-## Writing a PR
+Keep pull requests focused. Use draft PRs for early design or method review.
 
-When opening a pull request, please use one of the following prefixes:
+PR prefixes:
 
 - **[ENH]** for enhancements
 - **[FIX]** for bug fixes
 - **[TEST]** for new or updated tests
-- **[DOCS]** for new or updated documentation
+- **[DOCS]** for documentation changes
 - **[STYL]** for stylistic changes
-- **[MAINT]** for refactoring existing code, any maintainace related things
+- **[MAINT]** for maintenance or refactoring
 
-Pull requests should be submitted early and often (please don't mix too many unrelated changes within one PR)!
-If your pull request is not yet ready to be merged, please submit as a drafted PR.
-This tells the development team that your pull request is a "work-in-progress", and that you plan to continue working on it.
+## Making a release
 
-One your PR is ready a member of the development team will review your changes to confirm that they can be merged into the main codebase.
+This project currently does not publish releases on PyPI. We tag versions on the repository for user reference. Upon pushing a new tag, a GitHub workflow will build and publish a new Docker image.
 
-### Running the demo
+### Preparing a release
 
-You can run a demo by downloading some test data.
-
-Run the following from the root of the repository.
+Create a local release branch from `main`:
 
 ```bash
-datalad get wonkyconn/data/test_data
+git fetch upstream main
+git checkout -b REL-x.y.z upstream/main
 ```
 
-```bash
-INPUT=wonkyconn/data/test_data/connectome_Schaefer2018
-OUTPUT=wonkyconn/data/test_data/test_output
-ATLAS_PATH=wonkyconn/data/test_data/connectome_Schaefer2018/atlases/sub-1/func/sub-1_seg-Schaefer2018400Parcels7Networks_dseg.nii.gz
-PHENOTYPE=wonkyconn/data/test_data/connectome_Schaefer2018/participants.tsv
-wonkyconn ${INPUT} ${OUTPUT} group \
-    --phenotypes ${PHENOTYPE} \
-    --atlas Schaefer2018400Parcels7Networks ${ATLAS_PATH} \
-    --group-by seg desc \
-    --verbosity 2
-```
+First, update the file `docs/source/changes.md` to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
 
-## Prepare a release
-
-Currently this project is not pushed to PyPi.
-We simply tag the version on the repository so users can reference the version of installation.
-The release process will trigger a new tagged docker build of the software.
-
-Switch to a new branch locally:
-
-```bash
-git checkout -b REL-x.y.z
-```
-First we need to prepare the release by updating the file `wonkyconn/docs/changes.md` to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
-
-Finally, we need to change the title from x.y.z.dev to x.y.z
+Finally, change the title from x.y.z.dev to x.y.z:
 
 ```markdown
 ## x.y.z
@@ -166,31 +173,31 @@ Finally, we need to change the title from x.y.z.dev to x.y.z
 ### New
 ...
 ```
+
 Add these changes and submit a PR:
 
 ```bash
-git add docs/
+git add docs/source/changes.md
 git commit -m "REL x.y.z"
 git push upstream REL-x.y.z
 ```
 
-Once the PR has been reviewed and merged, pull from master and tag the merge commit:
+Once the PR has been reviewed and merged, pull from `upstream/main` and tag the merge commit:
 
 ```bash
-git checkout main
-git pull upstream main
+git fetch upstream main
+git switch upstream/main
 git tag x.y.z
-git push upstream --tags
+git push origin --tags
 ```
 
-## Post-release
+### Post-release
 
-At this point, the release has been made.
+The release is done 🎉
 
-We also need to create a new section in `wonkyconn/docs/changes.md` with a title and the usual New, Enhancements, Bug Fixes, and Changes sections for the version currently under development:
+Create a new boilerplate section in `docs/source/changes.md` for the next release:
 
 ```markdown
-
 ## x.y.z+1.dev
 
 **Released MONTH YEAR**
@@ -203,5 +210,8 @@ We also need to create a new section in `wonkyconn/docs/changes.md` with a title
 
 ### Changes
 ```
+
+> [!caution]
+> Current releases use Git tags and container builds. Update this page if PyPI publishing is added.
 
 Based on contributing guidelines from the [STEMMRoleModels](https://github.com/KirstieJane/STEMMRoleModels/blob/gh-pages/CONTRIBUTING.md) project and [Nilearn contribution guidelines](https://nilearn.github.io/stable/development.html).

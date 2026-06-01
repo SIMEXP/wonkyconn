@@ -5,9 +5,10 @@
 import os
 import sys
 
+sys.path.insert(0, os.path.abspath("../.."))
+
 from wonkyconn import __copyright__, __packagename__, __version__
 
-sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -29,7 +30,7 @@ extensions = [
 ]
 
 templates_path = ["_templates"]
-exclude_patterns = []
+exclude_patterns = ["seann_workflow_notes.md"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -38,4 +39,4 @@ exclude_patterns = []
 html_theme = "sphinx_rtd_theme"
 
 # -- Options for myst_parser -------------------------------------------------
-myst_enable_extensions = ["colon_fence"]
+myst_enable_extensions = ["colon_fence", "alert"]
