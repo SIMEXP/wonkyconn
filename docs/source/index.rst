@@ -6,7 +6,7 @@
 Wonkyconn Documentation
 =======================
 
-Boom
+Wonkyconn evaluates residual motion and analytic quality in group-level fMRI connectomes and creates visualization reports to compare the generated metrics.
 
 .. toctree::
    :maxdepth: 1

@@ -7,7 +7,7 @@ Wonkyconn runs group-level analyses on datasets with timeseries files and connec
 Build the latest container image (`edge`) or a specific tag available on [docker hub](https://hub.docker.com/r/halfpipe/wonkyconn/tags):
 
 ```bash
-VERSION="edge" apptainer build wonkyconn-${VERSION}.sif docker://halfpipe/wonkyconn:${VERSION}
+VERSION="edge"; apptainer build wonkyconn-${VERSION}.sif docker://halfpipe/wonkyconn:${VERSION}
 ```
 
 Run with explicit host-path bindings:
@@ -35,6 +35,10 @@ apptainer run --contain --cleanenv \
 > - Mount every directory the container needs with `--bind`, for example `--bind /path/to/atlas:atlas`.
 > - For `--atlas`, use the same atlas name used in HALFpipe, as shown in filenames such as `sub-xxx_task-xxx_feature-xxx_atlas-NAME_desc-correlation.tsv`.
 
+## Grouping behavior
+
+Wonkyconn groups results from the input filenames automatically. These groups appear in `metrics.tsv` and `metrics.png`. There is no `--group-by` option.
+
 ## Textual user-interface
 
 You can run wonkyconn with a textual user-interface, using the `--textual` flag, to select the input files and options interactively. This is useful for users who are new to the command line or want to explore the options before running the analysis.
@@ -46,10 +50,9 @@ pip install "wonkyconn[textual] @ git+https://github.com/HALFpipe/wonkyconn.git"
 ```
 
 > [!WARNING]
-> Requires an interactive terminal.
-
-> [!WARNING]
-> Current GUI supports one atlas entry. Use the CLI for multi-atlas runs.
+>
+> - The textual UI requires an interactive terminal (TTY) if you are running Wonkyconn inside a non-interactive terminal (e.g., HPC batch job), use the CLI with `--textual`.
+> - Current GUI supports one atlas entry. Use the CLI for multi-atlas runs.
 
 ## Command line interface
 
