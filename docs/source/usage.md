@@ -1,10 +1,10 @@
 # Usage
 
-Wonkyconn runs group-level analyses on datasets with timeseries files and connectivity matrices.
+Wonkyconn runs group-level analyses on datasets with timeseries files and {term}`connectivity matrices <Connectivity matrix>`.
 
 ## Run with Apptainer (recommended)
 
-Build the latest container image (`edge`) or a specific tag available on [docker hub](https://hub.docker.com/r/halfpipe/wonkyconn/tags):
+Build the latest container image (`halfpipe/wonkyconn:edge`) or a specific tag available on [docker hub](https://hub.docker.com/r/halfpipe/wonkyconn/tags):
 
 ```bash
 VERSION="edge"; apptainer build wonkyconn-${VERSION}.sif docker://halfpipe/wonkyconn:${VERSION}
@@ -31,9 +31,16 @@ apptainer run --contain --cleanenv \
 > [!IMPORTANT]
 >
 > - Your `phenotype.tsv` file must include `participant_id`, `age`, and `gender` columns.
-> - Wonkyconn expects the input folder to be named `derivatives/halfpipe`.
+> - Wonkyconn expects the {term}`HALFpipe` input folder to be named `derivatives/halfpipe`.
 > - Mount every directory the container needs with `--bind`, for example `--bind /path/to/atlas:atlas`.
-> - For `--atlas`, use the same atlas name used in HALFpipe, as shown in filenames such as `sub-xxx_task-xxx_feature-xxx_atlas-NAME_desc-correlation.tsv`.
+> - For `--atlas`, use the same {term}`atlas <Atlas>` name used in {term}`HALFpipe`, as shown in filenames such as `sub-xxx_task-xxx_feature-xxx_atlas-NAME_desc-correlation.tsv`.
+
+## CPU and memory requirements
+
+As a general starting point, allocate 1–2 CPU cores and 10 GB of RAM for a typical group-level run. If resources are limited, consider using `--light-mode`, which skips the more compute- and memory-intensive metrics: age/sex prediction and {term}`gradient similarity <Gradient similarity>`.
+
+> [!WARNING]
+> Wonkyconn has not yet been benchmarked systematically across datasets.
 
 ## Grouping behavior
 
@@ -52,7 +59,7 @@ pip install "wonkyconn[textual] @ git+https://github.com/HALFpipe/wonkyconn.git"
 > [!WARNING]
 >
 > - The textual UI requires an interactive terminal (TTY) if you are running Wonkyconn inside a non-interactive terminal (e.g., HPC batch job), use the CLI with `--textual`.
-> - Current GUI supports one atlas entry. Use the CLI for multi-atlas runs.
+> - Current GUI supports one {term}`atlas <Atlas>` entry. Use the CLI for multi-atlas runs.
 
 ## Command line interface
 

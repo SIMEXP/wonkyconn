@@ -21,6 +21,7 @@ Wonkyconn evaluates residual motion and analytic quality in group-level fMRI con
    :maxdepth: 1
    :caption: Reference and maintenance
 
+   glossary.md
    api.rst
    contributing.md
    changes.md

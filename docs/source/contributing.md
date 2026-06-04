@@ -37,7 +37,7 @@ Fetch light smoke-test data:
 datalad get -r data/halfpipe data/atlases
 ```
 
-Fetch BEP017-style, heavy smoke-test data:
+Fetch {term}`BEP017`-style, heavy smoke-test data:
 
 ```bash
 datalad get -r data/giga_connectome/connectome_Schaefer20187Networks_dev

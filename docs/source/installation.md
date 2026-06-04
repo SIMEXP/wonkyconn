@@ -4,7 +4,7 @@ Use the container unless you need a development install.
 
 ## Container installation
 
-Pull the latest image (`wonkyconn:edge`) from docker hub (**recommended**).
+Build the latest container image (`halfpipe/wonkyconn:edge`) or a specific tag available on [docker hub](https://hub.docker.com/r/halfpipe/wonkyconn/tags).
 
 [Apptainer](https://apptainer.org/docs/user/latest/) (**recommended**):
 
