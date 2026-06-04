@@ -25,6 +25,11 @@ Gradient similarity
 QC-FC
     Quality-control functional connectivity, a test of whether connectivity edge weights are associated with head motion.
 
+    Power, J. D., Schlaggar, B. L., & Petersen, S. E. (2015). Recent progress and outstanding issues in motion correction in resting state fMRI. NeuroImage, 105, 536–551. [https://doi.org/10.1016/j.neuroimage.2014.10.044](https://doi.org/10.1016/j.neuroimage.2014.10.044)
+
+
 [Yeo 7 networks](https://bids.neuroimaging.io/index.html)
     A seven-network functional brain parcellation used by Wonkyconn to summarize within-network connectivity and DMN-related metrics.
+    Yeo, B. T. T., Krienen, F. M., Sepulcre, J., Sabuncu, M. R., Lashkari, D., Hollinshead, M., Roffman, J. L., Smoller, J. W., Zöllei, L., Polimeni, J. R., Fischl, B., Liu, H., & Buckner, R. L. (2011). The organization of the human cerebral cortex estimated by intrinsic functional connectivity. Journal of Neurophysiology, 106(3), 1125–1165. [https://doi.org/10.1152/jn.00338.2011](https://doi.org/10.1152/jn.00338.2011)
+
 ```
