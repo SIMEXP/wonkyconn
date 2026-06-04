@@ -2,7 +2,7 @@
 
 ## Development environment
 
-Fork the repository from github and clone your fork locally (see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) to setup your ssh key):
+Fork the repository from GitHub and clone your fork locally (see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) to set up your SSH key):
 
 ```bash
 git clone git@github.com:<your_username>/wonkyconn.git

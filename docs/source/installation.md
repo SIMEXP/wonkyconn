@@ -4,7 +4,7 @@ Use the container unless you need a development install.
 
 ## Container installation
 
-Build the latest container image (`halfpipe/wonkyconn:edge`) or a specific tag available on [docker hub](https://hub.docker.com/r/halfpipe/wonkyconn/tags).
+Build the latest container image (`halfpipe/wonkyconn:edge`) or a specific tag available on [Docker Hub](https://hub.docker.com/r/halfpipe/wonkyconn/tags).
 
 [Apptainer](https://apptainer.org/docs/user/latest/) (**recommended**):
 
@@ -13,7 +13,7 @@ apptainer build wonkyconn-edge.simg docker://halfpipe/wonkyconn:edge
 ```
 
 > [!tip]
-> Apptainer was formerly known as Sinfularity. If you have an older version of Singularity, you can use the same command but replace `apptainer` with `singularity`.
+> Apptainer was formerly known as Singularity. If you have an older version of Singularity, you can use the same command but replace `apptainer` with `singularity`.
 
 [Docker](https://docs.docker.com/):
 

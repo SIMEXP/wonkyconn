@@ -1,6 +1,6 @@
 # Outputs
 
-Wonkyconn writes a group-level a summary figure, metrics table, and {term}`DMN` similarity tables to the output directory.
+Wonkyconn writes a group-level summary figure, metrics table, and {term}`DMN` similarity tables to the output directory.
 
 > [!NOTE]
 > Grouping columns depend on the input dataset and appear in the output table.
