@@ -1,4 +1,4 @@
-FROM ghcr.io/prefix-dev/pixi:0.53.0 AS build
+FROM ghcr.io/prefix-dev/pixi:0.70.2 AS build
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
