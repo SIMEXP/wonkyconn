@@ -31,16 +31,11 @@ pre-commit install
 
 ## Downloading test data
 
-Fetch light smoke-test data:
+Fetch all test data (this will take a bit of time and 1GB of disk space):
 
 ```bash
-datalad get -r data/halfpipe data/atlases
-```
-
-Fetch {term}`BEP017`-style, heavy smoke-test data:
-
-```bash
-datalad get -r data/giga_connectome/connectome_Schaefer20187Networks_dev
+# From the root of the repository
+datalad get .
 ```
 
 ### Demo command
