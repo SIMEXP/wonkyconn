@@ -6,7 +6,7 @@ The processing pipeline computes the following metrics for each group of connect
 
 - **QC-FC correlation** — correlation between framewise displacement and each edge, with median absolute value and percentage of significant edges.
 - **Distance dependence** — correlation between QC-FC values and Euclidean distance between atlas nodes.
-- **Global correlation (GCOR)** — average correlation across all pairs of time series, summarised as mean and SEM.
+- **Global correlation (GCOR)** — average correlation across all pairs of time series, summarized as mean and SEM.
 - **DMN similarity** — within-network mean connectivity for each Yeo 7 network, and correlation of seed-based connectivity patterns with the default mode network template.
 - **DMN distance t-statistic** — paired t-test comparing DMN–visual vs DMN–FPN mean connectivity distances.
 - **Degrees of freedom loss** — mean and standard deviation of temporal degrees of freedom lost to confound regression.

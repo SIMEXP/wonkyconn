@@ -53,7 +53,7 @@
 
 ## 25.12.0-alpha
 
-**Released December 2026**
+**Released December 2025**
 
 ### New
 

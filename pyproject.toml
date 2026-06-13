@@ -36,7 +36,7 @@ dependencies = [
 wonkyconn = "wonkyconn.run:main"
 
 [project.urls]
-"Homepage" = "https://github.com/SIMEXP/wonkyconn"
+"Homepage" = "https://github.com/HALFpipe/wonkyconn"
 "Documentation" = "https://wonkyconn.readthedocs.io/en/latest/"
 
 [project.optional-dependencies]
@@ -44,7 +44,7 @@ textual = ["textual>=0.58"]
 docs = [
     "sphinx",
     "sphinx_rtd_theme",
-    "myst-parser",
+    "myst-parser>=5.1.0", # >= 5.1.0 for the GitHub-like callout boxes
     "sphinx-argparse",
 ]
 dev = [

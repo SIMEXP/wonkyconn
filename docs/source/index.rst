@@ -3,14 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to wonkyconn's documentation!
-===========================================
+Wonkyconn Documentation
+=======================
 
-Boom
+Wonkyconn evaluates residual motion and analytic quality in group-level fMRI connectomes and creates visualization reports to compare the generated metrics.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents
+   :caption: User guide
 
    installation.md
    usage.md
@@ -19,10 +19,11 @@ Boom
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contribution and maintenance
+   :caption: Reference and maintenance
 
-   contributing.md
+   glossary.md
    api.rst
+   contributing.md
    changes.md
 
 Indices and tables
@@ -30,4 +31,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`

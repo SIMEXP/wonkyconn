@@ -1,27 +1,36 @@
 # Installation
 
-## Quick start (container)
+Use the container unless you need a development install.
 
-Pull the latest image from docker hub (Recommended).
+## Container installation
 
-Apptainer (formerly known as Singularity; recommended):
+Build the latest container image (`halfpipe/wonkyconn:edge`) or a specific tag available on [Docker Hub](https://hub.docker.com/r/halfpipe/wonkyconn/tags).
+
+[Apptainer](https://apptainer.org/docs/user/latest/) (**recommended**):
 
 ```bash
 apptainer build wonkyconn-edge.simg docker://halfpipe/wonkyconn:edge
 ```
 
-Docker:
+> [!tip]
+> Apptainer was formerly known as Singularity. If you have an older version of Singularity, you can use the same command but replace `apptainer` with `singularity`.
+
+[Docker](https://docs.docker.com/):
+
 ```bash
 docker pull halfpipe/wonkyconn:edge
 ```
 
-## Install as a python package
+## Source installation
 
-Install the project in a Python environment:
+Install from Git:
 
 ```bash
-pip install git+https://github.com/halfpipe/wonkyconn.git
+pip install git+https://github.com/HALFpipe/wonkyconn.git
 ```
 
-This method is available for all versions.
-Change the tag based on version you would like to use.
+Install a specific tag:
+
+```bash
+pip install "wonkyconn @ git+https://github.com/HALFpipe/wonkyconn.git@26.02.0-alpha"
+```
