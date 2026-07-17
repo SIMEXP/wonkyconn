@@ -59,6 +59,8 @@ def workflow(args: argparse.Namespace) -> None:
     # check if light mode is enabled - if so, it will not run the age and sex prediction and gradient similarity
     disable_prediction_gradient = getattr(args, "light_mode", False)
 
+    enable_site_correction = getattr(args, "site_correction", True)
+
     # Check BIDS path
     bids_dir = args.bids_dir
     index = BIDSIndex()
@@ -138,6 +140,7 @@ def workflow(args: argparse.Namespace) -> None:
             seg_key,
             atlases,
             disable_prediction_gradient,
+            enable_site_correction
         )
         record.update(dict(zip(group_by, key, strict=False)))
         if len(group_by) == 2:
@@ -171,6 +174,7 @@ def make_record(
     seg_key: str,
     atlases: dict[str, Atlas],
     disable_prediction_gradient: bool,
+    site_correction: bool = False,
 ) -> dict[str, Any]:
     """Compute all QC metrics for a single group of connectivity matrices."""
     seg_subjects: list[str] = list()
@@ -197,7 +201,7 @@ def make_record(
 
     # Slice phenotypes (age, gender, etc.) for just this group
     seg_data_frame = data_frame.loc[seg_subjects]
-    qcfc = calculate_qcfc(seg_data_frame, connectivity_matrices, metric_key)
+    qcfc = calculate_qcfc(seg_data_frame, connectivity_matrices, metric_key, site_correction)
 
     (seg,) = index.get_tag_values(seg_key, {c.path for c in connectivity_matrices})
     distance_matrix = distance_matrices[seg]
@@ -241,6 +245,10 @@ def make_record(
     try:
         ages = seg_data_frame["age"].to_numpy()
         genders = seg_data_frame["gender"].to_numpy()
+        if site_correction:
+            # Might need to use get_dummies to convert categorical 
+            # site variable into one-hot encoding for regression
+            sites = seg_data_frame["site"].to_numpy()
 
         scores = age_sex_scores(
             connectivity_matrices,
@@ -285,7 +293,9 @@ def make_record(
 
 
 def load_data_frame(args: argparse.Namespace) -> pd.DataFrame:
-    """Load a phenotype TSV with ``participant_id``, ``gender``, and ``age`` columns."""
+    """Load a phenotype TSV with ``participant_id``, ``gender``, and ``age`` columns.
+    If site correction is enabled, the ``site`` column is also required.
+    """
     data_frame = pd.read_csv(
         args.phenotypes,
         sep="\t",
@@ -296,4 +306,8 @@ def load_data_frame(args: argparse.Namespace) -> pd.DataFrame:
         raise ValueError('Phenotypes file is missing the "gender" column')
     if "age" not in data_frame.columns:
         raise ValueError('Phenotypes file is missing the "age" column')
+    if getattr(args, "site_correction", True):
+        logger.info("Site correction is enabled - checking for 'site' column in phenotypes file.")
+        if "site" not in data_frame.columns:
+            raise ValueError('Phenotypes file is missing the "site" column required for site correction')
     return data_frame

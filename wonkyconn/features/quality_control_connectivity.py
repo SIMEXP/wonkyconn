@@ -20,6 +20,7 @@ def calculate_qcfc(
     data_frame: pd.DataFrame,
     connectivity_matrices: Iterable[ConnectivityMatrix],
     metric_key: str = "MeanFramewiseDisplacement",
+    site_correction: bool = False,
 ) -> pd.DataFrame:
     """
     metric calculation: quality control / functional connectivity
@@ -30,7 +31,8 @@ def calculate_qcfc(
     accounted for participant age and sex
 
     Parameters:
-        data_frame (pd.DataFrame): The data frame containing the covariates "age" and "gender".
+        data_frame (pd.DataFrame): The data frame containing the covariates "age" and "gender". 
+                                   "site" is also required if site correction is applied.
                                    It needs to have one row for each connectivity matrix.
         connectivity_matrices (Iterable[ConnectivityMatrix]): The connectivity matrices to calculate QCFC for.
         metric_key (str, optional): The key of the metric to use for QCFC calculation. Defaults to "MeanFramewiseDisplacement".
@@ -44,7 +46,10 @@ def calculate_qcfc(
     )
     if np.isnan(metrics).all():
         raise ValueError(f"None of the connectivity matrices have a metric with key '{metric_key}'")
-    covariates = np.asarray(dmatrix("age + gender", data_frame))
+    if site_correction:
+        covariates = np.asarray(dmatrix("age + C(gender) + C(site)", data_frame))
+    else:
+        covariates = np.asarray(dmatrix("age + C(gender)", data_frame))
 
     connectivity_arrays = [
         connectivity_matrix.load()

@@ -67,6 +67,13 @@ def global_parser(exit_on_error: bool = True) -> argparse.ArgumentParser:
         help="Disable sex and age prediction to reduce runtime.",
     )
     parser.add_argument(
+        "--site_correction",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Apply site correction to the data.",
+    )
+    parser.add_argument(
         "--verbosity",
         help="""
         Verbosity level.
