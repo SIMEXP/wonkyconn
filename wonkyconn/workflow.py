@@ -140,7 +140,7 @@ def workflow(args: argparse.Namespace) -> None:
             seg_key,
             atlases,
             disable_prediction_gradient,
-            enable_site_correction
+            enable_site_correction,
         )
         record.update(dict(zip(group_by, key, strict=False)))
         if len(group_by) == 2:
@@ -246,7 +246,7 @@ def make_record(
         ages = seg_data_frame["age"].to_numpy()
         genders = seg_data_frame["gender"].to_numpy()
         if site_correction:
-            # Might need to use get_dummies to convert categorical 
+            # Might need to use get_dummies to convert categorical
             # site variable into one-hot encoding for regression
             sites = seg_data_frame["site"].to_numpy()
 

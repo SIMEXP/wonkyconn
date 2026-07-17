@@ -31,7 +31,7 @@ def calculate_qcfc(
     accounted for participant age and sex
 
     Parameters:
-        data_frame (pd.DataFrame): The data frame containing the covariates "age" and "gender". 
+        data_frame (pd.DataFrame): The data frame containing the covariates "age" and "gender".
                                    "site" is also required if site correction is applied.
                                    It needs to have one row for each connectivity matrix.
         connectivity_matrices (Iterable[ConnectivityMatrix]): The connectivity matrices to calculate QCFC for.
