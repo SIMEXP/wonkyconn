@@ -85,7 +85,9 @@ def test_cli_and_textual_namespace_consistency(tmp_path: Path):
 
     # Get the attribute names from both namespaces
     cli_attrs = set(vars(cli_args).keys())
+    print(f"CLI attributes: {cli_attrs}")
     config_attrs = set(vars(config_namespace).keys())
+    print(f"Config attributes: {config_attrs}")
 
     # Attributes that are interface-specific and not passed to workflow()
     # These are handled separately before calling workflow()

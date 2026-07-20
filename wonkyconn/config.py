@@ -27,6 +27,7 @@ class WonkyConnConfig:
     light_mode: bool = False
     theme: str | None = None  # GUI-only
     suppress_warnings: bool = False
+    site_correction: bool = False
 
     @classmethod
     def from_cli_args(cls, args: argparse.Namespace | None) -> "WonkyConnConfig":
@@ -52,6 +53,7 @@ class WonkyConnConfig:
             debug=bool(getattr(args, "debug", False)),
             light_mode=bool(getattr(args, "light_mode", False)),
             suppress_warnings=bool(getattr(args, "suppress_warnings", False)),
+            site_correction=bool(getattr(args, "site_correction", False)),
         )
 
     def to_namespace(self) -> argparse.Namespace:
@@ -75,4 +77,5 @@ class WonkyConnConfig:
             verbosity=self.verbosity,
             debug=self.debug,
             light_mode=self.light_mode,
+            site_correction=self.site_correction,
         )
