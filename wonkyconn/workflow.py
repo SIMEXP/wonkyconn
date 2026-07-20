@@ -245,10 +245,6 @@ def make_record(
     try:
         ages = seg_data_frame["age"].to_numpy()
         genders = seg_data_frame["gender"].to_numpy()
-        if site_correction:
-            # Might need to use get_dummies to convert categorical
-            # site variable into one-hot encoding for regression
-            sites = seg_data_frame["site"].to_numpy()
 
         scores = age_sex_scores(
             connectivity_matrices,
