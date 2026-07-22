@@ -154,7 +154,7 @@ def workflow(args: argparse.Namespace) -> None:
         record["dmn_similarity_mean"] = dmn_similarity_avg
 
         records.append(record)
-
+    
     plot(records, group_by, output_dir)
 
     for record in records:
@@ -245,11 +245,13 @@ def make_record(
     try:
         ages = seg_data_frame["age"].to_numpy()
         genders = seg_data_frame["gender"].to_numpy()
+        sites = seg_data_frame["site"].to_numpy() if site_correction else None
 
         scores = age_sex_scores(
             connectivity_matrices,
             ages=ages,
             genders=genders,
+            sites=sites,
             n_splits=_DEFAULT_N_SPLITS,
             random_state=42,
             n_pca=_DEFAULT_N_PCA,
