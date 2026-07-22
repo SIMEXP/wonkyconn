@@ -154,7 +154,7 @@ def workflow(args: argparse.Namespace) -> None:
         record["dmn_similarity_mean"] = dmn_similarity_avg
 
         records.append(record)
-    
+
     plot(records, group_by, output_dir)
 
     for record in records:

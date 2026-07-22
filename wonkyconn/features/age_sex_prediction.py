@@ -10,18 +10,19 @@ from numpy.typing import NDArray
 from sklearn.decomposition import PCA  # type: ignore[import-not-found]
 from sklearn.impute import SimpleImputer  # type: ignore[import-not-found]
 from sklearn.linear_model import LogisticRegression, Ridge  # type: ignore[import-not-found]
-from sklearn.model_selection import StratifiedShuffleSplit, cross_validate  # type: ignore[import-not-found]
-from sklearn.pipeline import Pipeline  # type: ignore[import-not-found]
-from sklearn.preprocessing import LabelEncoder, StandardScaler  # type: ignore[import-not-found]
-from sklearn.metrics import ( # type: ignore[import-not-found]
+from sklearn.metrics import (  # type: ignore[import-not-found]
     accuracy_score,
     mean_absolute_error,
     r2_score,
     roc_auc_score,
 )
+from sklearn.model_selection import StratifiedShuffleSplit  # type: ignore[import-not-found]
+from sklearn.pipeline import Pipeline  # type: ignore[import-not-found]
+from sklearn.preprocessing import LabelEncoder, StandardScaler  # type: ignore[import-not-found]
 
 if TYPE_CHECKING:
     from ..base import ConnectivityMatrix
+
 
 def regress_site(
     X_train: NDArray[np.float32],
@@ -39,13 +40,9 @@ def regress_site(
         fill_value=0.0,
     )
 
-    design_train = np.column_stack(
-        [np.ones(len(train_site)), train_site.to_numpy()]
-    )
+    design_train = np.column_stack([np.ones(len(train_site)), train_site.to_numpy()])
 
-    design_test = np.column_stack(
-        [np.ones(len(test_site)), test_site.to_numpy()]
-    )
+    design_test = np.column_stack([np.ones(len(test_site)), test_site.to_numpy()])
 
     beta, *_ = np.linalg.lstsq(
         design_train,
@@ -58,6 +55,7 @@ def regress_site(
     X_test_corr = X_test - design_test[:, 1:] @ beta_site
 
     return X_train_corr, X_test_corr
+
 
 def training_pipeline(
     connectivity_data: NDArray[np.float32],
@@ -92,7 +90,7 @@ def training_pipeline(
         cv_strategy = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=random_state)
         scoring_metrics = {"accuracy": "accuracy", "roc_auc": "roc_auc"}
         splits = cv_strategy.split(connectivity_data, y)
-        
+
     else:
         y = np.asarray(target_labels)
         estimator = Ridge(alpha=1.0)
@@ -111,7 +109,7 @@ def training_pipeline(
             ("estimator", estimator),
         ]
     )
-    
+
     scores = {metric: [] for metric in scoring_metrics}
 
     with parallel_backend("threading", n_jobs=n_jobs):
@@ -134,24 +132,16 @@ def training_pipeline(
             y_pred = pipe.predict(X_test)
 
             if task_type == "classification":
-                scores["accuracy"].append(
-                    accuracy_score(y_test, y_pred)
-                )
+                scores["accuracy"].append(accuracy_score(y_test, y_pred))
 
                 y_prob = pipe.predict_proba(X_test)[:, 1]
 
-                scores["roc_auc"].append(
-                    roc_auc_score(y_test, y_prob)
-                )
+                scores["roc_auc"].append(roc_auc_score(y_test, y_prob))
 
             else:
-                scores["mae"].append(
-                    mean_absolute_error(y_test, y_pred)
-                )
+                scores["mae"].append(mean_absolute_error(y_test, y_pred))
 
-                scores["r2"].append(
-                    r2_score(y_test, y_pred)
-                )
+                scores["r2"].append(r2_score(y_test, y_pred))
 
     scores_df = pd.DataFrame(scores)
 
