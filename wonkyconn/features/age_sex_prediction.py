@@ -44,8 +44,16 @@ def regress_site(
 
     design_test = np.column_stack([np.ones(len(test_site)), test_site.to_numpy()])
 
-    beta_train, *_ = np.linalg.lstsq(design_train, X_train, rcond=None,)
-    beta_test, *_ = np.linalg.lstsq(design_test, X_test, rcond=None,)
+    beta_train, *_ = np.linalg.lstsq(
+        design_train,
+        X_train,
+        rcond=None,
+    )
+    beta_test, *_ = np.linalg.lstsq(
+        design_test,
+        X_test,
+        rcond=None,
+    )
     X_train_corr = X_train - design_train[:, 1:] @ beta_train[1:, :]
     X_test_corr = X_test - design_test[:, 1:] @ beta_test[1:, :]
 
