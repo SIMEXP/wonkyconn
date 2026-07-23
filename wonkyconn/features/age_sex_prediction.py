@@ -44,15 +44,10 @@ def regress_site(
 
     design_test = np.column_stack([np.ones(len(test_site)), test_site.to_numpy()])
 
-    beta, *_ = np.linalg.lstsq(
-        design_train,
-        X_train,
-        rcond=None,
-    )
-
-    beta_site = beta[1:, :]
-    X_train_corr = X_train - design_train[:, 1:] @ beta_site
-    X_test_corr = X_test - design_test[:, 1:] @ beta_site
+    beta_train, *_ = np.linalg.lstsq(design_train, X_train, rcond=None,)
+    beta_test, *_ = np.linalg.lstsq(design_test, X_test, rcond=None,)
+    X_train_corr = X_train - design_train[:, 1:] @ beta_train[1:, :]
+    X_test_corr = X_test - design_test[:, 1:] @ beta_test[1:, :]
 
     return X_train_corr, X_test_corr
 
@@ -88,7 +83,7 @@ def training_pipeline(
         y = LabelEncoder().fit_transform(target_labels)
         estimator = LogisticRegression(max_iter=5000, solver="saga", penalty="l2", n_jobs=n_jobs, random_state=random_state)
         cv_strategy = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=random_state)
-        scoring_metrics = {"accuracy": "accuracy", "roc_auc": "roc_auc"}
+        scoring_metrics = ["accuracy", "roc_auc"]
         splits = cv_strategy.split(connectivity_data, y)
 
     else:
@@ -99,7 +94,7 @@ def training_pipeline(
         cv_strategy = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=random_state)
         splits = list(cv_strategy.split(np.zeros_like(bins), bins))
 
-        scoring_metrics = {"mae": "neg_mean_absolute_error", "r2": "r2"}
+        scoring_metrics = ["mae", "r2"]
 
     pipe = Pipeline(
         [
