@@ -102,7 +102,7 @@ def training_pipeline(
 
     if task_type == "classification":
         y_train = pd.Series(LabelEncoder().fit_transform(target_labels))  # pyright: ignore[reportArgumentType, reportCallIssue]
-        estimator = LogisticRegression(max_iter=5000, solver="saga", l1_ratio=0.0, random_state=random_state)
+        estimator = LogisticRegression(max_iter=5000, solver="lbfgs", random_state=random_state)
 
         bins = y_train
 
