@@ -22,9 +22,9 @@ def test_single_subject_within_network_connectivity(data_path: Path) -> None:  #
         / "halfpipe/derivatives/halfpipe/"
         / "sub-10171/func/task-rest/sub-10171_task-rest_feature-cCompCor_atlas-Schaefer2018Combined_timeseries.json"
     )
-    dl.get(str(dseg_path))
-    dl.get(str(relmat_path))
-    dl.get(str(metadata_path))
+    dl.get(str(dseg_path))  # pyright: ignore[reportAttributeAccessIssue]
+    dl.get(str(relmat_path))  # pyright: ignore[reportAttributeAccessIssue]
+    dl.get(str(metadata_path))  # pyright: ignore[reportAttributeAccessIssue]
     atlas = Atlas.create("Schaefer2018Combined", dseg_path)
     with metadata_path.open("r") as file:
         metadata = json.load(file)

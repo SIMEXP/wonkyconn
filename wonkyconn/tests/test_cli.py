@@ -16,13 +16,13 @@ import scipy
 from tqdm.auto import tqdm
 
 from wonkyconn import __version__
-from wonkyconn.config import WonkyConnConfig
+from wonkyconn.config import WonkyconnConfig
 from wonkyconn.file_index.bids import BIDSIndex
 from wonkyconn.run import global_parser, main
 from wonkyconn.workflow import workflow
 
 
-def test_version(capsys):
+def test_version(capsys: pytest.CaptureFixture[str]) -> None:
     try:
         main(["-v"])
     except SystemExit:
@@ -31,7 +31,7 @@ def test_version(capsys):
     assert __version__ == captured.out.split()[0]
 
 
-def test_help(capsys):
+def test_help(capsys: pytest.CaptureFixture[str]) -> None:
     try:
         main(["-h"])
     except SystemExit:
@@ -40,7 +40,7 @@ def test_help(capsys):
     assert "Evaluating the residual motion in fMRI connectome and visualize reports" in captured.out
 
 
-def test_cli_and_textual_namespace_consistency(tmp_path: Path):
+def test_cli_and_textual_namespace_consistency(tmp_path: Path) -> None:
     """Ensure CLI (run.py) and Textual UI produce namespaces with the same attributes.
 
     Both interfaces should produce namespaces that workflow() can consume,
@@ -72,7 +72,7 @@ def test_cli_and_textual_namespace_consistency(tmp_path: Path):
     )
 
     # Get namespace from WonkyConnConfig (used by Textual UI)
-    config = WonkyConnConfig(
+    config = WonkyconnConfig(
         bids_dir=bids_dir,
         output_dir=output_dir,
         analysis_level="group",
@@ -128,9 +128,9 @@ def _copy_file(path: Path, new_path: Path, sub: str) -> None:
 
 
 @pytest.mark.heavy_smoke
-def test_giga_connectome(data_path: Path, tmp_path: Path):
+def test_giga_connectome(data_path: Path, tmp_path: Path) -> None:
     data_path = data_path / "giga_connectome" / "connectome_Schaefer20187Networks_dev"
-    dl.get(str(data_path))
+    dl.get(str(data_path))  # pyright: ignore[reportAttributeAccessIssue]
 
     bids_dir = tmp_path / "bids"
     bids_dir.mkdir()
@@ -185,9 +185,10 @@ def test_giga_connectome(data_path: Path, tmp_path: Path):
 
 
 @pytest.mark.smoke
-def test_halfpipe(data_path: Path, tmp_path: Path):
+@pytest.mark.parametrize("site_correction", [False, True], ids=["no-site-correction", "site-correction"])
+def test_halfpipe(data_path: Path, tmp_path: Path, site_correction: bool) -> None:
     bids_dir = data_path / "halfpipe"
-    dl.get(str(bids_dir))
+    dl.get(str(bids_dir))  # pyright: ignore[reportAttributeAccessIssue]
 
     index = BIDSIndex()
     index.put(bids_dir)
@@ -198,7 +199,7 @@ def test_halfpipe(data_path: Path, tmp_path: Path):
     phenotypes_path = bids_dir / "participants.tsv"
 
     atlas_path = data_path / "atlases"
-    dl.get(str(atlas_path))
+    dl.get(str(atlas_path))  # pyright: ignore[reportAttributeAccessIssue]
 
     atlas_args: list[str] = list()
     atlas_args.append("--atlas")
@@ -216,6 +217,8 @@ def test_halfpipe(data_path: Path, tmp_path: Path):
         str(output_dir),
         "group",
     ]
+    if site_correction:
+        argv.insert(0, "--site-correction")
 
     args = parser.parse_args(argv)
     workflow(args)
@@ -235,9 +238,10 @@ def test_halfpipe(data_path: Path, tmp_path: Path):
 
 
 @pytest.mark.heavy_smoke
-def test_halfpipe_with_full_metrics(data_path: Path, tmp_path: Path):
+@pytest.mark.parametrize("site_correction", [False, True], ids=["no-site-correction", "site-correction"])
+def test_halfpipe_with_full_metrics(data_path: Path, tmp_path: Path, site_correction: bool) -> None:
     bids_dir = data_path / "halfpipe"
-    dl.get(str(bids_dir))
+    dl.get(str(bids_dir))  # pyright: ignore[reportAttributeAccessIssue]
 
     index = BIDSIndex()
     index.put(bids_dir)
@@ -248,7 +252,7 @@ def test_halfpipe_with_full_metrics(data_path: Path, tmp_path: Path):
     phenotypes_path = bids_dir / "participants.tsv"
 
     atlas_path = data_path / "atlases"
-    dl.get(str(atlas_path))
+    dl.get(str(atlas_path))  # pyright: ignore[reportAttributeAccessIssue]
 
     atlas_args: list[str] = list()
     atlas_args.append("--atlas")
@@ -265,6 +269,8 @@ def test_halfpipe_with_full_metrics(data_path: Path, tmp_path: Path):
         str(output_dir),
         "group",
     ]
+    if site_correction:
+        argv.insert(0, "--site-correction")
 
     args = parser.parse_args(argv)
     workflow(args)

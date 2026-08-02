@@ -1,78 +1,80 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Dict, List
 
 import numpy as np
 import pandas as pd
-from joblib import parallel_backend  # type: ignore[import-not-found]
-from nilearn.connectome import sym_matrix_to_vec  # type: ignore[import-not-found]
+from joblib import parallel_backend
+from nilearn.connectome import sym_matrix_to_vec
 from numpy.typing import NDArray
-from sklearn.base import BaseEstimator, TransformerMixin  # type: ignore[import-not-found]
-from sklearn.decomposition import PCA  # type: ignore[import-not-found]
-from sklearn.impute import SimpleImputer  # type: ignore[import-not-found]
-from sklearn.linear_model import LogisticRegression, Ridge  # type: ignore[import-not-found]
-from sklearn.model_selection import StratifiedShuffleSplit, cross_validate  # type: ignore[import-not-found]
-from sklearn.pipeline import Pipeline  # type: ignore[import-not-found]
-from sklearn.preprocessing import LabelEncoder, StandardScaler  # type: ignore[import-not-found]
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.decomposition import PCA
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.model_selection import StratifiedShuffleSplit, cross_validate
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 if TYPE_CHECKING:
     from ..base import ConnectivityMatrix
 
 
+@dataclass
 class SiteRegressor(BaseEstimator, TransformerMixin):
-    """
-    Regress out site effects from connectivity features.
-    """
+    sites: NDArray[np.str_]
 
-    def __init__(self: SiteRegressor, n_connectivity_features: int) -> None:
+    model: LinearRegression = field(default_factory=LinearRegression)
+
+    def _get_dummies(self: SiteRegressor, X: pd.DataFrame) -> pd.DataFrame:  # noqa: N803
         """
+        Convert site labels to dummy variables.
+
         Args:
-            n_connectivity_features: Number of connectivity features in the input data.
-        """
-        self.n_connectivity_features = n_connectivity_features
+            X: A DataFrame containing the site labels.
 
-    def fit(self: SiteRegressor, connectivity_data_site: NDArray[np.float32], y: None = None) -> SiteRegressor:
+        Returns:
+            A DataFrame with dummy variables for each site.
+        """
+        return pd.get_dummies(self.sites[X.index], drop_first=False, dtype=np.float32)
+
+    def fit(self: SiteRegressor, X: pd.DataFrame, y: pd.DataFrame | None = None) -> SiteRegressor:  # noqa: N803
         """
         Fit the site regressor to the connectivity data.
 
         Args:
-            connectivity_data_site: A 2D array where the first n_connectivity_features columns
-            are connectivity features and the remaining columns are site dummy variables.
+            X: Connectivity data with one row per subject. Its index is used to
+                look up the corresponding site labels in ``self.sites``.
             y: Ignored. This parameter exists for compatibility with the scikit-learn API.
 
         Returns:
             self: Returns the instance itself.
-        """
-        connectivity_feat = connectivity_data_site[:, : self.n_connectivity_features]
-        site = connectivity_data_site[:, self.n_connectivity_features :]
 
-        # Add intercept
-        design = np.column_stack([np.ones(len(site)), site])
+        Raises:
+            ValueError: If the training data contains fewer than two sites.
+        """
+        fit_sites = np.asarray(self.sites[X.index])
+        if np.unique(fit_sites).size < 2:
+            raise ValueError("SiteRegressor requires at least two sites in the training data.")
+
+        y = X
 
         # Estimate coefficients on the training fold only
-        self.beta_ = np.linalg.lstsq(design, connectivity_feat, rcond=None)[0]
-
+        self.model.fit(self._get_dummies(X), y)
         return self
 
-    def transform(self: SiteRegressor, connectivity_data_site: NDArray[np.float32]) -> NDArray[np.float64]:
+    def transform(self: SiteRegressor, X: pd.DataFrame) -> pd.DataFrame:  # noqa: N803
         """
         Transform the connectivity data by regressing out site effects.
+
         Args:
-            connectivity_data_site: A 2D array where the first n_connectivity_features columns
-            are connectivity features and the remaining columns are site dummy variables.
+            X: Connectivity data to correct, with one row per subject. Its index
+                is used to look up the corresponding site labels in ``self.sites``.
 
         Returns:
-            A 2D array of connectivity features with site effects regressed out.
+            pd.DataFrame: Connectivity data with the fitted site effects removed.
         """
-
-        connectivity_feat = connectivity_data_site[:, : self.n_connectivity_features]
-        site = connectivity_data_site[:, self.n_connectivity_features :]
-
-        # Add intercept
-        design = np.column_stack([np.ones(len(site)), site])
-
-        # Remove only the site contribution (keep the intercept)
-        return connectivity_feat - design[:, 1:] @ self.beta_[1:]
+        return X - self.model.predict(self._get_dummies(X))
 
 
 def training_pipeline(
@@ -100,42 +102,39 @@ def training_pipeline(
     Returns:
         pd.DataFrame: Statistics (mean, 95% CI) of the scores obtained.
     """
-    connectivity_data = np.asarray(connectivity_data, dtype=np.float32, order="C")
-
-    # Transform site labels into dummy variables and concatenate with connectivity data
-    if sites is not None:
-        site = pd.get_dummies(
-            sites,
-            drop_first=True,
-            dtype=np.float32,
-        ).to_numpy()
-
-        connectivity_data_site = np.concatenate([connectivity_data, site], axis=1)
-    else:
-        connectivity_data_site = connectivity_data
+    connectivity_data_frame = pd.DataFrame(connectivity_data, dtype=np.float32)
 
     if task_type == "classification":
-        y_train = LabelEncoder().fit_transform(target_labels)
-        estimator = LogisticRegression(max_iter=5000, solver="saga", penalty="l2", n_jobs=n_jobs, random_state=random_state)
-        cv_strategy = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=random_state)
+        y_train = pd.Series(LabelEncoder().fit_transform(target_labels))  # pyright: ignore[reportArgumentType, reportCallIssue]
+        estimator = LogisticRegression(max_iter=5000, solver="lbfgs", random_state=random_state)
+
+        bins = y_train
+
         scoring_metrics = {"accuracy": "accuracy", "roc_auc": "roc_auc"}
     else:
-        y_train = np.asarray(target_labels)
+        y_train = pd.Series(target_labels)
         estimator = Ridge(alpha=1.0)
 
         bins = pd.qcut(y_train, q=5, labels=False, duplicates="drop")
-        cv_strategy = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=random_state)
-        splits = list(cv_strategy.split(np.zeros_like(bins), bins))
-        cv_strategy = splits
 
         scoring_metrics = {"mae": "neg_mean_absolute_error", "r2": "r2"}
 
-    steps = [
-        ("imputer", SimpleImputer(strategy="median")),
+    if sites is not None:
+        data_frame = pd.DataFrame({"site": sites, "bins": bins})
+        # Get unique row indices as combined bins
+        bins = data_frame.groupby(data_frame.columns.tolist(), sort=False).ngroup()
+
+    cv_strategy = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=random_state)
+    splits = list(cv_strategy.split(np.zeros(len(bins)), bins))
+
+    steps: list[tuple[str, BaseEstimator]] = [
+        # keep_empty_features=True avoids sklearn's "Skipping features without any
+        # observed values" warning.
+        ("imputer", SimpleImputer(strategy="median", keep_empty_features=True).set_output(transform="pandas")),
     ]
 
     if sites is not None:
-        steps.append(("site_regression", SiteRegressor(connectivity_data.shape[1])))
+        steps.append(("site_regression", SiteRegressor(sites)))
 
     steps.extend(
         [
@@ -156,11 +155,12 @@ def training_pipeline(
     with parallel_backend("threading", n_jobs=n_jobs):
         cv_results = cross_validate(
             pipe,
-            connectivity_data_site,
+            connectivity_data_frame,
             y_train,
-            cv=cv_strategy,
+            cv=splits,
             scoring=scoring_metrics,
             n_jobs=n_jobs,
+            error_score="raise",
         )
 
     scores_df = pd.DataFrame({k.replace("test_", ""): v for k, v in cv_results.items() if k.startswith("test_")})
