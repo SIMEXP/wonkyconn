@@ -70,17 +70,15 @@ def dataset(request: pytest.FixtureRequest) -> Dataset:
         connectivity_data = (np.outer(latent, loadings) + rng.normal(scale=0.3, size=(subject_count, feature_count))).astype(
             np.float32
         )
+        noise = rng.normal(scale=0.5, size=subject_count)
         match config.task:
             case "classification":
-                if config.is_predictable:
-                    score = latent + rng.normal(scale=0.5, size=subject_count)
-                    labels = np.where(score > np.median(score), "male", "female")
-                else:
-                    labels = np.array(["female", "male"] * (subject_count // 2))
+                score = latent + noise
+                labels = np.where(score > np.median(score), "male", "female")
+                if not config.is_predictable:
                     rng.shuffle(labels)
             case "regression":
-                noise = rng.normal(scale=0.5, size=subject_count)
-                raw = latent + noise if config.is_predictable else rng.normal(size=subject_count)
+                raw = (latent + noise) if config.is_predictable else (noise + noise)
                 # Rescale to a plausible age range.
                 labels = 18.0 + (raw - raw.min()) / (raw.max() - raw.min()) * 62.0
 
@@ -144,3 +142,6 @@ def test_training_pipeline(
     elif dataset.config.is_predictable:
         # Labels that carry signal should be recovered above the chance baseline.
         assert score > learnable_threshold
+    else:
+        # Random labels should not be recoverable above chance level.
+        assert score < chance_ceiling
