@@ -142,7 +142,8 @@ class DsegAtlas(Atlas):
         for n in network_labels:
             cur_region = math_img(f"img=={n}", img=yeo7_nii)
             masker = NiftiMasker(cur_region)
-            atlas_parcel_in_network = masker.fit_transform(self.image)
+            masker.fit()
+            atlas_parcel_in_network = masker.transform(self.image)
             atlas_parcel_in_network = np.unique(atlas_parcel_in_network)[1:]
             region_membership.loc[atlas_parcel_in_network, f"yeo7-{int(n)}"] = 1
         return region_membership
