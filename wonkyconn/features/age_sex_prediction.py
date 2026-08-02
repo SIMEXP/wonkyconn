@@ -124,7 +124,9 @@ def training_pipeline(
     splits = list(cv_strategy.split(np.zeros(len(bins)), bins))
 
     steps: list[tuple[str, BaseEstimator]] = [
-        ("imputer", SimpleImputer(strategy="median").set_output(transform="pandas")),
+        # keep_empty_features=True avoids sklearn's "Skipping features without any
+        # observed values" warning.
+        ("imputer", SimpleImputer(strategy="median", keep_empty_features=True).set_output(transform="pandas")),
     ]
 
     if sites is not None:

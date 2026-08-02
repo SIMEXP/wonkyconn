@@ -1,4 +1,5 @@
 import glob
+import warnings
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
@@ -128,7 +129,10 @@ def group_mean_connectivity(
     matrices = [np.asarray(cm.load(), dtype=np.float64) for cm in connectivity_matrices]
     matrices_vec = [sym_matrix_to_vec(mat, discard_diagonal=False) for mat in matrices]
 
-    mean_vec = np.nanmean(matrices_vec, axis=0)
+    with warnings.catch_warnings():
+        # Edges that are NaN across all subjects yield all-NaN slices; the NaN is intended.
+        warnings.simplefilter("ignore", RuntimeWarning)
+        mean_vec = np.nanmean(matrices_vec, axis=0)
     mean_matrix = vec_to_sym_matrix(mean_vec, diagonal=None)
 
     return mean_matrix
