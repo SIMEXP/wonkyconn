@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Sequence
 
 from . import __version__
-from .config import WonkyConnConfig
+from .config import WonkyconnConfig
 from .logger import logger
 from .workflow import workflow
 
@@ -108,11 +108,11 @@ def _loosen_parser_for_gui(parser: argparse.ArgumentParser) -> None:
             action.required = False
 
 
-def _build_initial_config(args: argparse.Namespace | None) -> WonkyConnConfig:
-    return WonkyConnConfig.from_cli_args(args)
+def _build_initial_config(args: argparse.Namespace | None) -> WonkyconnConfig:
+    return WonkyconnConfig.from_cli_args(args)
 
 
-def _run_textual_ui(config: WonkyConnConfig) -> WonkyConnConfig | None:
+def _run_textual_ui(config: WonkyconnConfig) -> WonkyconnConfig | None:
     if not sys.stdout.isatty():
         print("The Textual UI requires an interactive terminal; run without --textual instead.", file=sys.stderr)
         sys.exit(2)

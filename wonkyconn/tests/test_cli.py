@@ -16,7 +16,7 @@ import scipy
 from tqdm.auto import tqdm
 
 from wonkyconn import __version__
-from wonkyconn.config import WonkyConnConfig
+from wonkyconn.config import WonkyconnConfig
 from wonkyconn.file_index.bids import BIDSIndex
 from wonkyconn.run import global_parser, main
 from wonkyconn.workflow import workflow
@@ -72,7 +72,7 @@ def test_cli_and_textual_namespace_consistency(tmp_path: Path) -> None:
     )
 
     # Get namespace from WonkyConnConfig (used by Textual UI)
-    config = WonkyConnConfig(
+    config = WonkyconnConfig(
         bids_dir=bids_dir,
         output_dir=output_dir,
         analysis_level="group",

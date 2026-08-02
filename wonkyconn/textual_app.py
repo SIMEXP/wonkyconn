@@ -21,10 +21,10 @@ from textual.widgets._directory_tree import DirEntry
 from textual.widgets._select import NoSelection
 from textual.widgets._tree import Tree
 
-from .config import WonkyConnConfig
+from .config import WonkyconnConfig
 
 
-class WonkyConnApp(App[WonkyConnConfig | None]):
+class WonkyConnApp(App[WonkyconnConfig | None]):
     """Textual UI for configuring wonkyconn."""
 
     CSS = """
@@ -107,7 +107,7 @@ class WonkyConnApp(App[WonkyConnConfig | None]):
 
     BINDINGS = [("escape", "cancel", "Cancel"), ("ctrl+s", "run", "Run")]
 
-    def __init__(self, initial_config: WonkyConnConfig):
+    def __init__(self, initial_config: WonkyconnConfig):
         super().__init__()
         self.initial_config = initial_config
         self.selected_path: Path | None = None
@@ -301,7 +301,7 @@ class WonkyConnApp(App[WonkyConnConfig | None]):
         if error:
             status.add_class("status-error")
 
-    def _validate_and_build_config(self) -> WonkyConnConfig | None:
+    def _validate_and_build_config(self) -> WonkyconnConfig | None:
         errors: list[str] = list()
 
         bids_str = self._path_values.get("bids_dir", "").strip()
@@ -348,7 +348,7 @@ class WonkyConnApp(App[WonkyConnConfig | None]):
             return None
 
         assert atlas_path is not None  # validated above
-        config = WonkyConnConfig(
+        config = WonkyconnConfig(
             bids_dir=bids_dir,
             output_dir=output_dir,
             analysis_level="group",

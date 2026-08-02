@@ -14,7 +14,7 @@ def _coerce_path(value: str | Path | None) -> Path | None:
 
 
 @dataclass
-class WonkyConnConfig:
+class WonkyconnConfig:
     """Shared configuration for CLI and GUI."""
 
     bids_dir: Path | None = None
@@ -30,7 +30,7 @@ class WonkyConnConfig:
     site_correction: bool = False
 
     @classmethod
-    def from_cli_args(cls, args: argparse.Namespace | None) -> "WonkyConnConfig":
+    def from_cli_args(cls, args: argparse.Namespace | None) -> "WonkyconnConfig":
         """Create a config from argparse args (may be partial when GUI is requested)."""
         if args is None:
             return cls()
@@ -40,20 +40,20 @@ class WonkyConnConfig:
             verbosity = verbosity[0]
 
         atlas_entries: list[tuple[str, Path]] = list()
-        for label, atlas_path in getattr(args, "atlas", []) or []:
+        for label, atlas_path in args.atlas or []:
             atlas_entries.append((label, Path(atlas_path).expanduser().resolve()))
 
         return cls(
-            bids_dir=_coerce_path(getattr(args, "bids_dir", None)),
-            output_dir=_coerce_path(getattr(args, "output_dir", None)),
-            analysis_level=getattr(args, "analysis_level", "group"),
-            phenotypes=_coerce_path(getattr(args, "phenotypes", None)),
+            bids_dir=_coerce_path(args.bids_dir),
+            output_dir=_coerce_path(args.output_dir),
+            analysis_level=args.analysis_level,
+            phenotypes=_coerce_path(args.phenotypes),
             atlas=atlas_entries,
             verbosity=int(verbosity) if verbosity is not None else 2,
-            debug=bool(getattr(args, "debug", False)),
-            light_mode=bool(getattr(args, "light_mode", False)),
-            suppress_warnings=bool(getattr(args, "suppress_warnings", False)),
-            site_correction=bool(getattr(args, "site_correction", False)),
+            debug=bool(args.debug),
+            light_mode=bool(args.light_mode),
+            suppress_warnings=bool(args.suppress_warnings),
+            site_correction=bool(args.site_correction),
         )
 
     def to_namespace(self) -> argparse.Namespace:

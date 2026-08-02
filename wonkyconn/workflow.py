@@ -56,11 +56,6 @@ def workflow(args: argparse.Namespace) -> None:
         set_verbosity(args.verbosity)
     logger.debug(vars(args))
 
-    # check if light mode is enabled - if so, it will not run the age and sex prediction and gradient similarity
-    disable_prediction_gradient = getattr(args, "light_mode", False)
-
-    enable_site_correction = getattr(args, "site_correction", True)
-
     # Check BIDS path
     bids_dir = args.bids_dir
     index = BIDSIndex()
@@ -139,8 +134,9 @@ def workflow(args: argparse.Namespace) -> None:
             metric_key,
             seg_key,
             atlases,
-            disable_prediction_gradient,
-            enable_site_correction,
+            site_correction=args.site_correction,
+            # check if light mode is enabled - if so, it will not run the age and sex prediction and gradient similarity
+            disable_prediction_gradient=args.light_mode,
         )
         record.update(dict(zip(group_by, key, strict=False)))
         if len(group_by) == 2:
@@ -304,7 +300,7 @@ def load_data_frame(args: argparse.Namespace) -> pd.DataFrame:
         raise ValueError('Phenotypes file is missing the "gender" column')
     if "age" not in data_frame.columns:
         raise ValueError('Phenotypes file is missing the "age" column')
-    if getattr(args, "site_correction", True):
+    if args.site_correction:
         logger.info("Site correction is enabled - checking for 'site' column in phenotypes file.")
         if "site" not in data_frame.columns:
             raise ValueError('Phenotypes file is missing the "site" column required for site correction')
