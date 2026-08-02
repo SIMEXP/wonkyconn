@@ -65,7 +65,7 @@ jobs:
           environments: test
           frozen: true
       - run: pixi run unittest
-      - run: pixi run smoketestlight
+      - run: pixi run smoketestlight --cov-append
       - uses: codecov/codecov-action@v6
         if: ${{ always() }}
         with:
