@@ -4,10 +4,10 @@ from typing import Iterable, List, Tuple
 
 import nibabel as nib
 import numpy as np
-from brainspace.gradient import GradientMaps  # type: ignore[import-not-found]
-from nilearn import image  # type: ignore[import-not-found]
-from nilearn.connectome import sym_matrix_to_vec, vec_to_sym_matrix  # type: ignore[import-not-found]
-from nilearn.maskers import NiftiLabelsMasker  # type: ignore[import-not-found]
+from brainspace.gradient import GradientMaps
+from nilearn import image
+from nilearn.connectome import sym_matrix_to_vec, vec_to_sym_matrix
+from nilearn.maskers import NiftiLabelsMasker
 from scipy import stats
 
 from ..base import ConnectivityMatrix

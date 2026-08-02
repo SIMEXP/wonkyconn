@@ -82,7 +82,7 @@ def single_subject_within_network_connectivity(
     return (
         subj_average_connectivity_within_network,
         subj_variance_connectivity_within_network,
-        np.nanmean(subj_corr_with_network),
+        np.nanmean(subj_corr_with_network),  # pyright: ignore[reportReturnType]
     )
 
 
