@@ -7,8 +7,8 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 import scipy
-from nilearn.image import iter_img, load_img, math_img, resample_to_img  # type: ignore[import-not-found]
-from nilearn.maskers import NiftiLabelsMasker, NiftiMasker  # type: ignore[import-not-found]
+from nilearn.image import iter_img, load_img, math_img, resample_to_img
+from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 from numpy import typing as npt
 
 from .logger import logger
@@ -29,7 +29,7 @@ class Atlas(ABC):
     """
 
     seg: str
-    image: nib.nifti1.Nifti1Image
+    image: nib.nifti1.Nifti1Image  # pyright: ignore[reportAttributeAccessIssue]
 
     structure: npt.NDArray[np.bool_] = field(default_factory=lambda: np.ones((3, 3, 3), dtype=bool))
 
@@ -51,7 +51,7 @@ class Atlas(ABC):
             npt.NDArray[np.float64]: An array of centroid coordinates.
         """
         centroid_points = self.get_centroid_points()
-        centroid_coordinates = nib.affines.apply_affine(self.image.affine, centroid_points)
+        centroid_coordinates = nib.affines.apply_affine(self.image.affine, centroid_points)  # pyright: ignore[reportAttributeAccessIssue]
         return centroid_coordinates
 
     def get_distance_matrix(self) -> npt.NDArray[np.float64]:
@@ -65,7 +65,7 @@ class Atlas(ABC):
         centroids = self.get_centroids()
         return scipy.spatial.distance.squareform(scipy.spatial.distance.pdist(centroids))
 
-    def load_yeo7_network(self) -> nib.nifti1.Nifti1Image:
+    def load_yeo7_network(self) -> nib.nifti1.Nifti1Image:  # pyright: ignore[reportAttributeAccessIssue]
         """
         Load and resample the yeo 7 networks to the atlas's space.
 
@@ -102,10 +102,10 @@ class Atlas(ABC):
             None
 
         """
-        image = nib.nifti1.load(path)
+        image = nib.nifti1.load(path)  # pyright: ignore[reportAttributeAccessIssue]
 
         if image.ndim <= 3 or image.shape[3] == 1:
-            return DsegAtlas(seg, nib.funcs.squeeze_image(image))
+            return DsegAtlas(seg, nib.funcs.squeeze_image(image))  # pyright: ignore[reportAttributeAccessIssue]
         else:
             return ProbsegAtlas(seg, image)
 
@@ -161,7 +161,7 @@ class ProbsegAtlas(Atlas):
 
     def get_centroid_points(self) -> npt.NDArray[np.float64]:
         return np.asarray(
-            [self._get_centroid_point(i, image.get_fdata()) for i, image in enumerate(nib.funcs.four_to_three(self.image))]
+            [self._get_centroid_point(i, image.get_fdata()) for i, image in enumerate(nib.funcs.four_to_three(self.image))]  # pyright: ignore[reportAttributeAccessIssue]
         )
 
     def get_yeo7_membership(self) -> pd.DataFrame:

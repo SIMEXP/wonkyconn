@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
-from textual.app import App, ComposeResult  # type: ignore[import-not-found]
-from textual.containers import Center, Container, Horizontal, Vertical  # type: ignore[import-not-found]
-from textual.events import DescendantFocus  # type: ignore[import-not-found]
-from textual.widgets import (  # type: ignore[import-not-found]
+from textual.app import App, ComposeResult
+from textual.containers import Center, Container, Horizontal, Vertical
+from textual.events import DescendantFocus
+from textual.widgets import (
     Button,
     Checkbox,
     DirectoryTree,
@@ -17,9 +17,9 @@ from textual.widgets import (  # type: ignore[import-not-found]
     Select,
     Static,
 )
-from textual.widgets._directory_tree import DirEntry  # type: ignore[import-not-found]
-from textual.widgets._select import NoSelection  # type: ignore[import-not-found]
-from textual.widgets._tree import Tree  # type: ignore[import-not-found]
+from textual.widgets._directory_tree import DirEntry
+from textual.widgets._select import NoSelection
+from textual.widgets._tree import Tree
 
 from .config import WonkyConnConfig
 

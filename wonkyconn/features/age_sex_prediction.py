@@ -4,16 +4,16 @@ from typing import TYPE_CHECKING, Dict, List
 
 import numpy as np
 import pandas as pd
-from joblib import parallel_backend  # type: ignore[import-not-found]
-from nilearn.connectome import sym_matrix_to_vec  # type: ignore[import-not-found]
+from joblib import parallel_backend
+from nilearn.connectome import sym_matrix_to_vec
 from numpy.typing import NDArray
-from sklearn.base import BaseEstimator, TransformerMixin  # type: ignore[import-not-found]
-from sklearn.decomposition import PCA  # type: ignore[import-not-found]
-from sklearn.impute import SimpleImputer  # type: ignore[import-not-found]
-from sklearn.linear_model import LogisticRegression, Ridge  # type: ignore[import-not-found]
-from sklearn.model_selection import StratifiedShuffleSplit, cross_validate  # type: ignore[import-not-found]
-from sklearn.pipeline import Pipeline  # type: ignore[import-not-found]
-from sklearn.preprocessing import LabelEncoder, StandardScaler  # type: ignore[import-not-found]
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.decomposition import PCA
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression, Ridge
+from sklearn.model_selection import StratifiedShuffleSplit, cross_validate
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 if TYPE_CHECKING:
     from ..base import ConnectivityMatrix
