@@ -36,7 +36,7 @@ def create_fake_connectivity(
     return connectivity_matrices
 
 
-def test_gradients():
+def test_gradients() -> None:
     repo_root = Path(__file__).resolve().parent.parent
 
     path = repo_root / "data" / "gradients"
