@@ -28,7 +28,7 @@ def calculate_qcfc(
     For each edge, we then computed the correlation between the weight of
     that edge and the mean relative RMS motion.
     QC-FC relationships were calculated as partial correlations that
-    accounted for participant age and sex
+    accounted for participant age and sex (and site when ``site_correction`` is enabled).
 
     Parameters:
         data_frame (pd.DataFrame): The data frame containing the covariates "age" and "gender".
@@ -36,6 +36,8 @@ def calculate_qcfc(
                                    It needs to have one row for each connectivity matrix.
         connectivity_matrices (Iterable[ConnectivityMatrix]): The connectivity matrices to calculate QCFC for.
         metric_key (str, optional): The key of the metric to use for QCFC calculation. Defaults to "MeanFramewiseDisplacement".
+        site_correction (bool, optional): If True, include site as an additional covariate
+                                   (requires a "site" column in ``data_frame``). Defaults to False.
 
     Returns:
         pd.DataFrame: The QCFC values between connectivity matrices and the metric.

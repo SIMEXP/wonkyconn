@@ -48,8 +48,8 @@ def remove_nan_roi_atlas(atlas: nib.Nifti1Image, kept_idx: np.ndarray) -> Nifti1
         kept_idx (np.ndarray): Indices of rows/columns kept after NaN removal.
 
     Returns:
-        tuple[nib.Nifti1Image, list[int]]: Atlas image with only kept ROIs and
-            the list of kept label values.
+        nib.Nifti1Image: Atlas image containing only the kept ROIs, with removed
+            regions set to zero.
     """
 
     # Load atlas

@@ -43,12 +43,15 @@ class SiteRegressor(BaseEstimator, TransformerMixin):
         Fit the site regressor to the connectivity data.
 
         Args:
-            connectivity_data_site: A 2D array where the first n_connectivity_features columns
-            are connectivity features and the remaining columns are site dummy variables.
+            X: Connectivity data with one row per subject. Its index is used to
+                look up the corresponding site labels in ``self.sites``.
             y: Ignored. This parameter exists for compatibility with the scikit-learn API.
 
         Returns:
             self: Returns the instance itself.
+
+        Raises:
+            ValueError: If the training data contains fewer than two sites.
         """
         fit_sites = np.asarray(self.sites[X.index])
         if np.unique(fit_sites).size < 2:
@@ -63,12 +66,13 @@ class SiteRegressor(BaseEstimator, TransformerMixin):
     def transform(self: SiteRegressor, X: pd.DataFrame) -> pd.DataFrame:  # noqa: N803
         """
         Transform the connectivity data by regressing out site effects.
+
         Args:
-            connectivity_data_site: A 2D array where the first n_connectivity_features columns
-            are connectivity features and the remaining columns are site dummy variables.
+            X: Connectivity data to correct, with one row per subject. Its index
+                is used to look up the corresponding site labels in ``self.sites``.
 
         Returns:
-            A 2D array of connectivity features with site effects regressed out.
+            pd.DataFrame: Connectivity data with the fitted site effects removed.
         """
         return X - self.model.predict(self._get_dummies(X))
 
