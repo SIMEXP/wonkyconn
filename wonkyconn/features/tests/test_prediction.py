@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
 
 import numpy as np
@@ -6,7 +7,8 @@ import pandas as pd
 import pytest
 from numpy.typing import NDArray
 
-from wonkyconn.features.age_sex_prediction import training_pipeline
+from wonkyconn.base import ConnectivityMatrix
+from wonkyconn.features.age_sex_prediction import SiteRegressor, age_sex_scores, training_pipeline
 
 subject_count = 128
 feature_count = 4_096
@@ -145,3 +147,30 @@ def test_training_pipeline(
     else:
         # Random labels should not be recoverable above chance level.
         assert score < chance_ceiling
+
+
+def test_age_sex_scores(tmp_path: Path) -> None:
+    rng = np.random.default_rng(random_state)
+
+    region_count = np.sqrt(feature_count).astype(int).item()
+
+    matrices = []
+    for i in range(subject_count):
+        square = rng.normal(size=(region_count, region_count)).astype(np.float32)
+        path = tmp_path / f"sub-{i}.tsv"
+        np.savetxt(path, square + square.T, delimiter="\t")
+        matrices.append(ConnectivityMatrix(path, metadata=dict()))
+
+    ages = rng.uniform(18.0, 80.0, subject_count)
+    genders = np.array(["m", "f"] * (subject_count // 2))
+    sites = np.array(["site-a", "site-b"] * (subject_count // 2))
+
+    scores = age_sex_scores(matrices, ages, genders, sites, n_splits=3, n_pca=5, n_jobs=1)
+    assert len(scores) == 8
+    assert all(np.isfinite(value) for value in scores.values())
+
+
+def test_site_regressor_requires_two_sites() -> None:
+    regressor = SiteRegressor(np.array(["site-a", "site-a"]))
+    with pytest.raises(ValueError, match="at least two sites"):
+        regressor.fit(pd.DataFrame(np.zeros((2, 3), dtype=np.float32)))
