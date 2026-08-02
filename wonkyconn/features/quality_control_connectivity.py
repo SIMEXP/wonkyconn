@@ -70,7 +70,8 @@ def calculate_qcfc(
         axis=1,
     )
 
-    correlation, count = partial_correlation(connectivity_array, metrics, covariates)  # pyright: ignore[reportCallIssue]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        correlation, count = partial_correlation(connectivity_array, metrics, covariates)  # pyright: ignore[reportCallIssue]
     p_value = correlation_p_value(correlation, count)
 
     qcfc = pd.DataFrame(dict(i=i, j=j, correlation=correlation, p_value=p_value))
