@@ -45,7 +45,8 @@ def test_gradients():
     connectivity_matrices = create_fake_connectivity(n_regions=434, n_subjects=3)
 
     random_gradient, group_gradients = calculate_gradients_correlation.extract_gradients(
-        connectivity_matrices, atlas=nib.load(atlas_file)
+        connectivity_matrices,
+        atlas=nib.nifti1.load(atlas_file),  # pyright: ignore[reportAttributeAccessIssue]
     )
 
     # Calculate similarity for random gradient

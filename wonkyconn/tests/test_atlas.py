@@ -9,10 +9,7 @@ from templateflow.api import get as get_template
 from wonkyconn.atlas import Atlas
 
 
-def test_dseg_atlas(data_path: Path) -> None:
-    # atlas_path = data_path / YEO_NETWORK_MAP
-    # dl.get(str(atlas_path))
-
+def test_dseg_atlas() -> None:
     url = (
         "https://raw.githubusercontent.com/ThomasYeoLab/CBIG/master/"
         "stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/"
@@ -29,7 +26,7 @@ def test_dseg_atlas(data_path: Path) -> None:
         resolution=2,
         suffix="dseg",
         extension=".nii.gz",
-    )
+    )  # pyright: ignore[reportCallIssue]
     assert isinstance(path, Path)
 
     atlas = Atlas.create("Schaefer2018400Parcels7Networks", path)
@@ -60,10 +57,8 @@ def _get_centroids(path: Path):
     return centroids
 
 
-def test_probseg_atlas(data_path: Path) -> None:
-    # "TODO: @haoting wants to revisit this test, to check if the assertion values make sense"
-    # atlas_path = data_path / YEO_NETWORK_MAP
-    # dl.get(str(atlas_path))
+def test_probseg_atlas() -> None:
+    # TODO: @haoting wants to revisit this test, to check if the assertion values make sense
 
     path = get_template(
         template="MNI152NLin2009cAsym",
@@ -72,7 +67,7 @@ def test_probseg_atlas(data_path: Path) -> None:
         suffix="probseg",
         resolution=3,  # matches “res-03”
         extension=".nii.gz",
-    )
+    )  # pyright: ignore[reportCallIssue]
     assert isinstance(path, Path)
 
     _centroids = _get_centroids(path)

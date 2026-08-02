@@ -5,6 +5,7 @@ from typing import Iterable, List, Tuple
 import nibabel as nib
 import numpy as np
 from brainspace.gradient import GradientMaps
+from nibabel.nifti1 import Nifti1Image
 from nilearn import image
 from nilearn.connectome import sym_matrix_to_vec, vec_to_sym_matrix
 from nilearn.maskers import NiftiLabelsMasker
@@ -38,7 +39,7 @@ def remove_nan_from_matrix(matrix: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     return conn_clean, kept_idx
 
 
-def remove_nan_roi_atlas(atlas: nib.Nifti1Image, kept_idx: np.ndarray) -> nib.Nifti1Image:
+def remove_nan_roi_atlas(atlas: nib.Nifti1Image, kept_idx: np.ndarray) -> Nifti1Image:
     """Remove ROIs from an atlas that are not present in a connectivity matrix.
 
     Args:
@@ -62,10 +63,10 @@ def remove_nan_roi_atlas(atlas: nib.Nifti1Image, kept_idx: np.ndarray) -> nib.Ni
     keep_mask = np.isin(atlas_data, kept_labels)
     kept_atlas_data = atlas_data.copy()
     kept_atlas_data[~keep_mask] = 0
-    return nib.Nifti1Image(kept_atlas_data, atlas.affine, atlas.header), kept_labels
+    return Nifti1Image(kept_atlas_data, atlas.affine, atlas.header)
 
 
-def overlapping_atlas_with_mask(subject_atlas: nib.Nifti1Image, group_mask: nib.Nifti1Image) -> nib.Nifti1Image:
+def overlapping_atlas_with_mask(subject_atlas: Nifti1Image, group_mask: Nifti1Image) -> Nifti1Image:
     """Create a new atlas containing only regions that overlap with the group gradient mask.
 
     Args:
@@ -76,9 +77,9 @@ def overlapping_atlas_with_mask(subject_atlas: nib.Nifti1Image, group_mask: nib.
         nib.Nifti1Image: Atlas with non-overlapping regions zeroed out.
     """
 
-    mask_gradient_resampled = image.resample_to_img(
+    mask_gradient_resampled: Nifti1Image = image.resample_to_img(
         group_mask, subject_atlas, interpolation="nearest", copy_header=True, force_resample=True
-    )
+    )  # pyright: ignore[reportAssignmentType]
 
     # Get arrays
     atlas_data = subject_atlas.get_fdata()
@@ -153,7 +154,7 @@ def process_single_matrix(
     """
     matrix = np.asarray(connectivity_matrix, dtype=np.float64)
     conn_clean, kept_idx = remove_nan_from_matrix(matrix)
-    atlas_mask_without_nan, _ = remove_nan_roi_atlas(atlas, kept_idx)
+    atlas_mask_without_nan = remove_nan_roi_atlas(atlas, kept_idx)
 
     # filter out labels > 400
     atlas_data = atlas_mask_without_nan.get_fdata()
@@ -180,7 +181,7 @@ def process_single_matrix(
     gm = GradientMaps(approach="pca", n_components=5, alignment="procrustes", kernel="normalized_angle")
     ind_gradient = gm.fit(masked_matrix, reference=group_gradients_np)
 
-    return ind_gradient.aligned_, group_gradients_np
+    return ind_gradient.aligned_, group_gradients_np  # pyright: ignore[reportReturnType]
 
 
 def extract_gradients(
@@ -201,11 +202,11 @@ def extract_gradients(
     repo_root = Path(__file__).resolve().parent.parent
 
     path_gradients = repo_root / "data" / "gradients"
-    gradient_mask = nib.load(path_gradients / "gradientmask_cortical.nii.gz")
+    gradient_mask = nib.nifti1.load(path_gradients / "gradientmask_cortical.nii.gz")  # pyright: ignore[reportAttributeAccessIssue]
 
     # Load all group gradient templates
     gradient_files = sorted(glob.glob(str(path_gradients / "templates" / "gradient*_cortical_only.nii.gz")))
-    gradient_imgs = [nib.load(fname) for fname in gradient_files]
+    gradient_imgs = [nib.nifti1.load(fname) for fname in gradient_files]  # pyright: ignore[reportAttributeAccessIssue]
 
     mean_connectome = group_mean_connectivity(connectivity_matrices)
     gradient_aligned, template_gradient = process_single_matrix(mean_connectome, atlas, gradient_mask, gradient_imgs)

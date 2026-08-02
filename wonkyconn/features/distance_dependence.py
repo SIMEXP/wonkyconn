@@ -19,5 +19,5 @@ def calculate_distance_dependence(qcfc: pd.DataFrame, distance_matrix: npt.NDArr
     """
     i, j = map(np.asarray, zip(*qcfc.index, strict=False))
     distance_vector = distance_matrix[i, j]
-    r, _ = spearmanr(distance_vector, qcfc.correlation, nan_policy="omit")
-    return np.abs(r)
+    statistic, _ = spearmanr(distance_vector, qcfc.correlation, nan_policy="omit")
+    return np.abs(statistic).item()  # pyright: ignore[reportArgumentType, reportCallIssue]
