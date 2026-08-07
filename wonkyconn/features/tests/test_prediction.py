@@ -178,15 +178,15 @@ def test_site_regressor_requires_two_sites() -> None:
         regressor.fit(pd.DataFrame(np.zeros((2, 3), dtype=np.float32)))
 
 
-def test_training_pipeline_singleton_classes() -> None:
+def test_training_pipeline_exclude_singleton_classes(caplog: pytest.LogCaptureFixture) -> None:
     labels = np.array(["male"] * 10 + ["female"] * 10)
     sites = np.array(["site-a"] * 5 + ["site-b"] * 5 + ["site-a"] * 9 + ["site-b"] * 1)
 
     rng = np.random.default_rng(random_state)
     connectivity_data = rng.normal(size=(len(labels), feature_count)).astype(np.float32)
 
-    with pytest.raises(ValueError, match=r"least populated classes in y have only 1 member") as exc_info:
-        training_pipeline(
+    with caplog.at_level("WARNING"):
+        summary = training_pipeline(
             connectivity_data,
             labels,
             task_type="classification",
@@ -196,4 +196,8 @@ def test_training_pipeline_singleton_classes() -> None:
             random_state=random_state,
             sites=sites,
         )
-    assert "site-b_female" in str(exc_info.value)
+
+    assert isinstance(summary, pd.DataFrame)
+    assert set(summary.index) == {"accuracy", "roc_auc"}
+    assert np.isfinite(summary.to_numpy()).all()
+    assert "site-b_female" in caplog.text

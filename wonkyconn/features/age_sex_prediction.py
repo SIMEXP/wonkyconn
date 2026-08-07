@@ -16,6 +16,8 @@ from sklearn.model_selection import StratifiedShuffleSplit, cross_validate
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
+from ..logger import logger
+
 if TYPE_CHECKING:
     from ..base import ConnectivityMatrix
 
@@ -126,8 +128,19 @@ def training_pipeline(
         # Combine bins and sites
         bins = data_frame.agg("_".join, axis=1)
 
+    counts = bins.value_counts()
+    singletons = counts.index[counts == 1]
+    mask = bins.isin(singletons).to_numpy()
+    if mask.any():
+        count = mask.sum().item()
+        logger.warning(f"Excluding {count} {'subject'} that are the only subjects in their subgroups: {singletons.tolist()}")
+    keep = np.flatnonzero(np.logical_not(mask))
+
     cv_strategy = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=random_state)
-    splits = list(cv_strategy.split(np.zeros(len(bins)), bins))
+    splits = [
+        (keep[train_indices], keep[test_indices])
+        for train_indices, test_indices in cv_strategy.split(np.zeros(keep.size), bins.to_numpy()[keep])
+    ]
 
     steps: list[tuple[str, BaseEstimator]] = [
         # keep_empty_features=True avoids sklearn's "Skipping features without any
