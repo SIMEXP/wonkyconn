@@ -176,3 +176,51 @@ def test_site_regressor_requires_two_sites() -> None:
     regressor = SiteRegressor(np.array(["site-a", "site-a"]))
     with pytest.raises(ValueError, match="at least two sites"):
         regressor.fit(pd.DataFrame(np.zeros((2, 3), dtype=np.float32)))
+
+
+def test_training_pipeline_exclude_singleton_classes(caplog: pytest.LogCaptureFixture) -> None:
+    labels = np.array(["male"] * 10 + ["female"] * 10)
+    sites = np.array(["site-a"] * 5 + ["site-b"] * 5 + ["site-a"] * 9 + ["site-b"] * 1)
+
+    rng = np.random.default_rng(random_state)
+    connectivity_data = rng.normal(size=(len(labels), feature_count)).astype(np.float32)
+
+    with caplog.at_level("WARNING"):
+        summary = training_pipeline(
+            connectivity_data,
+            labels,
+            task_type="classification",
+            n_splits=3,
+            n_pca=5,
+            n_jobs=1,
+            random_state=random_state,
+            sites=sites,
+        )
+
+    assert isinstance(summary, pd.DataFrame)
+    assert set(summary.index) == {"accuracy", "roc_auc"}
+    assert np.isfinite(summary.to_numpy()).all()
+    assert "site-b_female" in caplog.text
+
+
+def test_training_pipeline_numeric_sites() -> None:
+    labels = np.array(["male", "female"] * 10)
+    sites = np.array([1.0, 2.0] * 10)
+
+    rng = np.random.default_rng(random_state)
+    connectivity_data = rng.normal(size=(len(labels), feature_count)).astype(np.float32)
+
+    summary = training_pipeline(
+        connectivity_data,
+        labels,
+        task_type="classification",
+        n_splits=3,
+        n_pca=5,
+        n_jobs=1,
+        random_state=random_state,
+        sites=sites,
+    )
+
+    assert isinstance(summary, pd.DataFrame)
+    assert set(summary.index) == {"accuracy", "roc_auc"}
+    assert np.isfinite(summary.to_numpy()).all()

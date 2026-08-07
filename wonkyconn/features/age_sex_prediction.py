@@ -16,6 +16,8 @@ from sklearn.model_selection import StratifiedShuffleSplit, cross_validate
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
+from ..logger import logger
+
 if TYPE_CHECKING:
     from ..base import ConnectivityMatrix
 
@@ -108,24 +110,37 @@ def training_pipeline(
         y_train = pd.Series(LabelEncoder().fit_transform(target_labels))  # pyright: ignore[reportArgumentType, reportCallIssue]
         estimator = LogisticRegression(max_iter=5000, solver="lbfgs", random_state=random_state)
 
-        bins = y_train
+        bins = pd.Series(target_labels)
 
         scoring_metrics = {"accuracy": "accuracy", "roc_auc": "roc_auc"}
     else:
         y_train = pd.Series(target_labels)
         estimator = Ridge(alpha=1.0)
 
-        bins = pd.qcut(y_train, q=5, labels=False, duplicates="drop")
+        bins, edges = pd.qcut(y_train, q=5, labels=False, retbins=True, duplicates="drop")
+        labels = pd.Series([f"age-group-{int(round(edges[i]))}-{int(round(edges[i + 1]))}" for i in range(len(edges) - 1)])
+        bins = bins.map(labels)
 
         scoring_metrics = {"mae": "neg_mean_absolute_error", "r2": "r2"}
 
     if sites is not None:
-        data_frame = pd.DataFrame({"site": sites, "bins": bins})
-        # Get unique row indices as combined bins
-        bins = data_frame.groupby(data_frame.columns.tolist(), sort=False).ngroup()
+        data_frame = pd.DataFrame({"site": sites, "bins": bins}).astype(str)
+        # Combine bins and sites
+        bins = data_frame.agg("_".join, axis=1)
+
+    counts = bins.value_counts()
+    singletons = counts.index[counts == 1]
+    mask = bins.isin(singletons).to_numpy()
+    if mask.any():
+        count = mask.sum().item()
+        logger.warning(f"Excluding {count} {'subject'} that are the only subjects in their subgroups: {singletons.tolist()}")
+    keep = np.flatnonzero(np.logical_not(mask))
 
     cv_strategy = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=random_state)
-    splits = list(cv_strategy.split(np.zeros(len(bins)), bins))
+    splits = [
+        (keep[train_indices], keep[test_indices])
+        for train_indices, test_indices in cv_strategy.split(np.zeros(keep.size), bins.to_numpy()[keep])
+    ]
 
     steps: list[tuple[str, BaseEstimator]] = [
         # keep_empty_features=True avoids sklearn's "Skipping features without any
