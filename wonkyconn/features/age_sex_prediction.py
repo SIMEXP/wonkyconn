@@ -124,7 +124,7 @@ def training_pipeline(
         scoring_metrics = {"mae": "neg_mean_absolute_error", "r2": "r2"}
 
     if sites is not None:
-        data_frame = pd.DataFrame({"site": sites, "bins": bins})
+        data_frame = pd.DataFrame({"site": sites, "bins": bins}).astype(str)
         # Combine bins and sites
         bins = data_frame.agg("_".join, axis=1)
 
