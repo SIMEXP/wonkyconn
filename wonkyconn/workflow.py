@@ -95,7 +95,7 @@ def workflow(config: WonkyconnConfig) -> None:
     grouped_connectivity_matrix: defaultdict[tuple[str, ...], list[ConnectivityMatrix]] = defaultdict(list)
 
     segs: set[str] = set()
-    for timeseries_path in index.get(suffix="timeseries", extension=".tsv"):
+    for timeseries_path in tqdm(index.get(suffix="timeseries", extension=".tsv"), unit="connectivity matrices"):
         query = dict(**index.get_tags(timeseries_path))
         del query["suffix"]
 
@@ -171,7 +171,9 @@ def make_record(
     site_correction: bool = False,
 ) -> dict[str, Any]:
     """Compute all QC metrics for a single group of connectivity matrices."""
-    seg_subjects: list[str] = list()
+    subjects: list[str] = list()
+    missing_subjects: list[str] = list()
+
     filtered: list[ConnectivityMatrix] = list()
 
     for c in connectivity_matrices:
@@ -185,14 +187,22 @@ def make_record(
         found = next((s for s in candidates if s in data_frame.index), None)
 
         if found:
-            seg_subjects.append(found)
+            subjects.append(found)
             filtered.append(c)
         else:
-            logger.info(f"Skipping subject {sub}: not found in phenotype file.")
+            missing_subjects.append(sub)
+
+    if missing_subjects:
+        logger.info(
+            f"Found {len(subjects)} subjects, skipped {len(missing_subjects)} subjects not in "
+            f"phenotype file: {', '.join(missing_subjects)}"
+        )
+    else:
+        logger.info(f"Found {len(subjects)} subjects")
 
     # Renaming for consistency
     connectivity_matrices[:] = filtered
-    seg_data_frame = data_frame.loc[seg_subjects]
+    seg_data_frame = data_frame.loc[subjects]
 
     (seg,) = index.get_tag_values(seg_key, {c.path for c in connectivity_matrices})
     distance_matrix = distance_matrices[seg]
@@ -287,7 +297,7 @@ def load_data_frame(config: WonkyconnConfig) -> pd.DataFrame:
     if "age" not in data_frame.columns:
         raise ValueError('Phenotypes file is missing the "age" column')
     if config.site_correction:
-        logger.info("Site correction is enabled - checking for 'site' column in phenotypes file.")
         if "site" not in data_frame.columns:
             raise ValueError('Phenotypes file is missing the "site" column required for site correction')
+        logger.info("Site correction is enabled")
     return data_frame
