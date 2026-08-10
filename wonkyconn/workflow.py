@@ -30,7 +30,7 @@ from .features.quality_control_connectivity import (
     calculate_qcfc_percentage,
 )
 from .file_index.bids import BIDSIndex
-from .logger import logger, set_verbosity
+from .logger import logger
 from .visualization.plot import plot
 
 _DEFAULT_N_SPLITS = 20
@@ -53,8 +53,8 @@ def is_halfpipe(index: BIDSIndex) -> bool:
 
 def workflow(config: WonkyconnConfig) -> None:
     """Run the group-level connectivity quality-control pipeline."""
-    if "pytest" not in sys.modules:
-        set_verbosity(config.verbosity)
+    if "pytest" not in sys.modules and config.log_level:
+        logger.setLevel(config.log_level)
     logger.debug(vars(config))
 
     # Check BIDS path

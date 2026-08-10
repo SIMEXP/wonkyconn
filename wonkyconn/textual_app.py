@@ -195,12 +195,12 @@ class WonkyConnApp(App[WonkyconnConfig | None]):
                 with Horizontal():
                     yield Select(
                         options=[
-                            ("Errors only (0)", "0"),
-                            ("Warnings (1)", "1"),
-                            ("Info (2)", "2"),
-                            ("Debug (3)", "3"),
+                            ("Errors only", "ERROR"),
+                            ("Warnings and errors", "WARNING"),
+                            ("Info", "INFO"),
+                            ("Debug", "DEBUG"),
                         ],
-                        id="verbosity",
+                        id="log_level",
                     )
                     yield Checkbox("Debug", id="debug")
                     yield Checkbox("Skip age/sex prediction and gradient", id="light_mode")
@@ -289,7 +289,7 @@ class WonkyConnApp(App[WonkyconnConfig | None]):
             self._path_values["atlas_path"] = str(path)
             self.query_one("#atlas_path_display", Button).label = f"Atlas Path: {path}"
 
-        self.query_one("#verbosity", Select).value = str(self.initial_config.verbosity)
+        self.query_one("#log_level", Select).value = str(self.initial_config.log_level)
         self.query_one("#debug", Checkbox).value = bool(self.initial_config.debug)
         self.query_one("#light_mode", Checkbox).value = bool(self.initial_config.light_mode)
         self.query_one("#suppress_warnings", Checkbox).value = bool(self.initial_config.suppress_warnings)
@@ -337,8 +337,8 @@ class WonkyConnApp(App[WonkyconnConfig | None]):
         elif not (atlas_path.exists() or atlas_path.is_symlink()) or (atlas_path.exists() and not atlas_path.is_file()):
             errors.append(f"Atlas file must exist: {atlas_path}")
 
-        raw_verbosity = self.query_one("#verbosity", Select[str]).value
-        verbosity = int("2" if isinstance(raw_verbosity, NoSelection) else raw_verbosity)
+        raw_log_level = self.query_one("#log_level", Select[str]).value
+        log_level = "INFO" if isinstance(raw_log_level, NoSelection) else raw_log_level
         debug = self.query_one("#debug", Checkbox).value
         light_mode = self.query_one("#light_mode", Checkbox).value
         suppress_warnings = self.query_one("#suppress_warnings", Checkbox).value
@@ -354,7 +354,7 @@ class WonkyConnApp(App[WonkyconnConfig | None]):
             analysis_level="group",
             phenotypes=phenotypes,
             atlas=[(atlas_label, atlas_path)],
-            verbosity=verbosity,
+            log_level=log_level,
             debug=debug,
             metrics=light_mode_metrics if light_mode else all_metrics,
             theme="dark" if self.dark else "light",

@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, Sequence, TypeAlias
+from typing import Literal, TypeAlias
 
 
 def _coerce_path(value: str | Path | None) -> Path | None:
@@ -28,7 +28,7 @@ class WonkyconnConfig:
     analysis_level: str = "group"
     phenotypes: Path | None = None
     atlas: list[tuple[str, Path]] = field(default_factory=list)
-    verbosity: int = 2
+    log_level: str | None = None
     debug: bool = False
     metrics: set[Metric] | None = None
     theme: str | None = None  # GUI-only
@@ -45,10 +45,6 @@ class WonkyconnConfig:
         if args is None:
             return cls()
 
-        verbosity = args.verbosity
-        if isinstance(verbosity, Sequence) and not isinstance(verbosity, (str, bytes)):
-            verbosity = verbosity[0]
-
         atlas_entries: list[tuple[str, Path]] = list()
         for label, atlas_path in args.atlas or []:
             atlas_entries.append((label, Path(atlas_path).expanduser().resolve()))
@@ -61,7 +57,7 @@ class WonkyconnConfig:
             analysis_level=args.analysis_level,
             phenotypes=_coerce_path(args.phenotypes),
             atlas=atlas_entries,
-            verbosity=int(verbosity) if verbosity is not None else 2,
+            log_level=args.log_level,
             debug=bool(args.debug),
             metrics=metrics,
             suppress_warnings=bool(args.suppress_warnings),

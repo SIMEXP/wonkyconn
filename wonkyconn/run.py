@@ -3,12 +3,23 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 from . import __version__
 from .config import WonkyconnConfig
 from .logger import logger
 from .workflow import workflow
+
+
+class VerbosityAction(argparse.Action):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Any,
+        option_string: str | None = None,
+    ) -> None:
+        namespace.log_level = {0: "ERROR", 1: "WARNING", 2: "INFO", 3: "DEBUG"}[values]
 
 
 def global_parser(exit_on_error: bool = True) -> argparse.ArgumentParser:
@@ -74,6 +85,21 @@ def global_parser(exit_on_error: bool = True) -> argparse.ArgumentParser:
         default=metrics,
     )
 
+    logging_group = parser.add_mutually_exclusive_group(required=False)
+    logging_group.add_argument(
+        "--verbosity",
+        choices=[0, 1, 2, 3],
+        type=int,
+        action=VerbosityAction,
+    )
+    logging_group.add_argument(
+        "--log-level",
+        required=False,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        default="INFO",
+        type=str,
+    )
+
     parser.add_argument("-v", "--version", action="version", version=__version__)
     parser.add_argument("--debug", action="store_true", default=False)
     parser.add_argument(
@@ -82,17 +108,6 @@ def global_parser(exit_on_error: bool = True) -> argparse.ArgumentParser:
         action="store_true",
         default=False,
         help="Apply site correction to the data.",
-    )
-    parser.add_argument(
-        "--verbosity",
-        help="""
-        Verbosity level.
-        """,
-        required=False,
-        choices=[0, 1, 2, 3],
-        default=2,
-        type=int,
-        nargs=1,
     )
     parser.add_argument(
         "--textual",
@@ -157,28 +172,28 @@ def main(argv: None | Sequence[str] = None) -> None:
     if use_gui:
         _loosen_parser_for_gui(parser)
 
-    parsed_args: argparse.Namespace | None
+    args: argparse.Namespace | None
     try:
-        parsed_args = parser.parse_args(raw_args)
+        args = parser.parse_args(raw_args)
     except SystemExit as exc:
         if use_gui and exc.code != 0:
-            parsed_args = None
+            args = None
         else:
             raise
     except argparse.ArgumentError:
         if not use_gui:
             raise
-        parsed_args = None
+        args = None
 
     if use_gui:
-        initial_config = _build_initial_config(parsed_args)
+        initial_config = _build_initial_config(args)
         config = _run_textual_ui(initial_config)
         if config is None:
             return
         debug_enabled = config.debug
         suppress_warnings = config.suppress_warnings
     else:
-        config = _build_initial_config(parsed_args)
+        config = _build_initial_config(args)
         debug_enabled = config.debug
         suppress_warnings = config.suppress_warnings
 
