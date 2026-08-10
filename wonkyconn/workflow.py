@@ -130,10 +130,9 @@ def workflow(config: WonkyconnConfig) -> None:
 
     records: list[dict[str, Any]] = list()
     for key, connectivity_matrices in tqdm(grouped_connectivity_matrix.items(), unit="groups"):
-        if len(group_by) == 2:
-            dmn_similarity_path = output_dir / f"dmn_similarity_{'-'.join(group_by)}.tsv"
-        else:
-            dmn_similarity_path = output_dir / f"dmn_similarity_{group_by[0]}.tsv"
+        suffix = "_".join(f"{key}-{value}" for key, value in zip(group_by, key, strict=False))
+        dmn_similarity_path = output_dir / "dmn-similarity" / f"{suffix}.tsv"
+
         record = make_record(
             index,
             data_frame,
@@ -247,7 +246,10 @@ def make_record(
     if "analytic-insights" in metrics:
         gcor = calculate_gcor(connectivity_matrices)
         dmn_similarity_summary, t_stats_dmn_vis_fpn = network_similarity(connectivity_matrices, region_memberships[seg])
+
+        dmn_similarity_path.parent.mkdir(parents=True, exist_ok=True)
         dmn_similarity_summary.to_csv(dmn_similarity_path, sep="\t")
+
         record.update(
             gcor=gcor,
             dmn_similarity_std=dmn_similarity_summary.loc[:, "corr_with_dmn"].std(),
