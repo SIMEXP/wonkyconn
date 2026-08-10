@@ -5,33 +5,49 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from hashlib import sha1
+from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
-from typing import Mapping
+from typing import Any, Mapping
 
 
-def create_defaultdict_of_set() -> defaultdict[str, set[Path]]:
-    """Factory for a ``defaultdict`` whose values are sets of ``Path``."""
+def _defaultdict_of_sets() -> dict[str, set[Any]]:
     return defaultdict(set)
 
 
+def _defaultdict_of_defaultdict_of_sets() -> dict[str, dict[str, set[Path]]]:
+    return defaultdict(_defaultdict_of_sets)
+
+
+def _defaultdict_of_dict() -> dict[Path, dict[str, str]]:
+    return defaultdict(dict)
+
+
+@dataclass
 class FileIndex:
-    def __init__(self) -> None:
-        self.paths_by_tags: dict[str, dict[str, set[Path]]] = defaultdict(create_defaultdict_of_set)
-        self.tags_by_paths: dict[Path, dict[str, str]] = defaultdict(dict)
+    paths_by_tags: dict[str, dict[str, set[Path]]] = field(default_factory=_defaultdict_of_defaultdict_of_sets)
+    tags_by_paths: dict[Path, dict[str, str]] = field(default_factory=_defaultdict_of_dict)
 
-    @property
-    def hexdigest(self) -> str:
-        """
-        A forty character hash code of the paths in the index, obtained using the `sha1` algorithm.
-        """
-        hash_algorithm = sha1()
+    @cached_property
+    def paths(self) -> set[Path]:
+        return set(self.tags_by_paths.keys())
 
-        for path in sorted(self.tags_by_paths.keys(), key=str):
-            path_bytes = str(path).encode()
-            hash_algorithm.update(path_bytes)
+    def _get_phenotypes_without_key(self, key: str) -> set[Path]:
+        if key not in self.paths_by_tags:
+            return self.paths.copy()
+        else:
+            cache = self.__dict__.setdefault("_phenotypes_without_key", dict())
+            phenotypes = cache.get(key)
+            if phenotypes is None:
+                phenotypes = self.paths.difference(*self.paths_by_tags[key].values())
+                cache[key] = phenotypes
+            return phenotypes
 
-        return hash_algorithm.hexdigest()
+    def _invalidate_caches(self) -> None:
+        if "phenotypes" in self.__dict__:
+            del self.__dict__["phenotypes"]
+        if "_phenotypes_without_key" in self.__dict__:
+            del self.__dict__["_phenotypes_without_key"]
 
     def get(self, **tags: str | None) -> set[Path]:
         """
@@ -47,21 +63,20 @@ class FileIndex:
         """
 
         matches: set[Path] | None = None
-        for key, value in tags.items():
+        for key, query in tags.items():
             if key not in self.paths_by_tags:
                 return set()
 
             values = self.paths_by_tags[key]
-            if value is not None:
-                if value not in values:
-                    return set()
-                paths: set[Path] = values[value]
+            if query is None:
+                paths = self._get_phenotypes_without_key(key)
+            elif query in values:
+                paths = values[query]
             else:
-                paths_in_index = set(self.tags_by_paths.keys())
-                paths = paths_in_index.difference(*values.values())
+                return set()
 
             if matches is not None:
-                matches &= paths
+                matches.intersection_update(paths)
             else:
                 matches = paths.copy()
 
