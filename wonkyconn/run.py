@@ -57,15 +57,25 @@ def global_parser(exit_on_error: bool = True) -> argparse.ArgumentParser:
         help="Specify the atlas label and the path to the atlas file (for example --atlas Schaefer2018 /path/to/atlas.nii.gz)",
     )
 
-    parser.add_argument("-v", "--version", action="version", version=__version__)
-    parser.add_argument("--debug", action="store_true", default=False)
-    parser.add_argument(
+    metrics_group = parser.add_mutually_exclusive_group(required=False)
+    metrics_group.add_argument(
         "--light-mode",
         required=False,
         action="store_true",
         default=False,
         help="Disable sex and age prediction to reduce runtime.",
     )
+    metrics = ["motion", "analytic-insights", "gradients", "prediction"]
+    metrics_group.add_argument(
+        "--metrics",
+        required=False,
+        nargs="+",
+        choices=metrics,
+        default=metrics,
+    )
+
+    parser.add_argument("-v", "--version", action="version", version=__version__)
+    parser.add_argument("--debug", action="store_true", default=False)
     parser.add_argument(
         "--site-correction",
         required=False,
@@ -162,15 +172,13 @@ def main(argv: None | Sequence[str] = None) -> None:
 
     if use_gui:
         initial_config = _build_initial_config(parsed_args)
-        result_config = _run_textual_ui(initial_config)
-        if result_config is None:
+        config = _run_textual_ui(initial_config)
+        if config is None:
             return
-        args_for_workflow = result_config.to_namespace()
-        debug_enabled = result_config.debug
-        suppress_warnings = result_config.suppress_warnings
+        debug_enabled = config.debug
+        suppress_warnings = config.suppress_warnings
     else:
         config = _build_initial_config(parsed_args)
-        args_for_workflow = config.to_namespace()
         debug_enabled = config.debug
         suppress_warnings = config.suppress_warnings
 
@@ -180,7 +188,7 @@ def main(argv: None | Sequence[str] = None) -> None:
         warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     try:
-        workflow(args_for_workflow)
+        workflow(config)
     except Exception as e:
         logger.exception("Exception: %s", e, exc_info=True)
         if debug_enabled:

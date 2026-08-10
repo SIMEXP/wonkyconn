@@ -2,7 +2,6 @@
 Process fMRIPrep outputs to timeseries based on denoising strategy.
 """
 
-import argparse
 import sys
 from collections import defaultdict, namedtuple
 from pathlib import Path
@@ -12,6 +11,8 @@ import numpy as np
 import pandas as pd
 from numpy import typing as npt
 from tqdm.auto import tqdm
+
+from wonkyconn.config import Metric, WonkyconnConfig
 
 from .atlas import Atlas
 from .base import ConnectivityMatrix
@@ -50,14 +51,16 @@ def is_halfpipe(index: BIDSIndex) -> bool:
     return False
 
 
-def workflow(args: argparse.Namespace) -> None:
+def workflow(config: WonkyconnConfig) -> None:
     """Run the group-level connectivity quality-control pipeline."""
     if "pytest" not in sys.modules:
-        set_verbosity(args.verbosity)
-    logger.debug(vars(args))
+        set_verbosity(config.verbosity)
+    logger.debug(vars(config))
 
     # Check BIDS path
-    bids_dir = args.bids_dir
+    bids_dir = config.bids_dir
+    if bids_dir is None:
+        raise ValueError("BIDS directory is not specified in the configuration")
     index = BIDSIndex()
     index.put(bids_dir)
 
@@ -75,14 +78,16 @@ def workflow(args: argparse.Namespace) -> None:
         has_header = False
 
     # Check output path
-    output_dir = args.output_dir
+    output_dir = config.output_dir
+    if output_dir is None:
+        raise ValueError("Output directory is not specified in the configuration")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Load data frame (participants: age, gender, etc.)
-    data_frame = load_data_frame(args)
+    data_frame = load_data_frame(config)
 
     # Load atlases
-    atlases: dict[str, Atlas] = {name: Atlas.create(name, Path(atlas_path_str)) for name, atlas_path_str in args.atlas}
+    atlases: dict[str, Atlas] = {name: Atlas.create(name, Path(atlas_path_str)) for name, atlas_path_str in config.atlas}
     logger.debug(f"Atlas dictionary contains: {list(atlases.keys())}")
 
     Group = namedtuple("Group", group_by)  # type: ignore[misc]
@@ -125,6 +130,10 @@ def workflow(args: argparse.Namespace) -> None:
 
     records: list[dict[str, Any]] = list()
     for key, connectivity_matrices in tqdm(grouped_connectivity_matrix.items(), unit="groups"):
+        if len(group_by) == 2:
+            dmn_similarity_path = output_dir / f"dmn_similarity_{'-'.join(group_by)}.tsv"
+        else:
+            dmn_similarity_path = output_dir / f"dmn_similarity_{group_by[0]}.tsv"
         record = make_record(
             index,
             data_frame,
@@ -134,27 +143,15 @@ def workflow(args: argparse.Namespace) -> None:
             metric_key,
             seg_key,
             atlases,
-            site_correction=args.site_correction,
-            # check if light mode is enabled - if so, it will not run the age and sex prediction and gradient similarity
-            disable_prediction_gradient=args.light_mode,
+            dmn_similarity_path,
+            site_correction=config.site_correction,
+            metrics=config.metrics,
         )
         record.update(dict(zip(group_by, key, strict=False)))
-        if len(group_by) == 2:
-            record["dmn_similarity"].to_csv(output_dir / f"dmn_similarity_{'-'.join(group_by)}.tsv", sep="\t")
-        else:
-            record["dmn_similarity"].to_csv(output_dir / f"dmn_similarity_{group_by[0]}.tsv", sep="\t")
-
-        dmn_similarity_std = record["dmn_similarity"].loc[:, "corr_with_dmn"].std()
-        dmn_similarity_avg = record["dmn_similarity"].loc[:, "corr_with_dmn"].mean()
-        record["dmn_similarity_std"] = dmn_similarity_std
-        record["dmn_similarity_mean"] = dmn_similarity_avg
 
         records.append(record)
 
     plot(records, group_by, output_dir)
-
-    for record in records:
-        record.pop("dmn_similarity")
 
     result_frame = pd.DataFrame.from_records(records, index=group_by)
     result_frame.to_csv(output_dir / "metrics.tsv", sep="\t")
@@ -169,7 +166,8 @@ def make_record(
     metric_key: str,
     seg_key: str,
     atlases: dict[str, Atlas],
-    disable_prediction_gradient: bool,
+    dmn_similarity_path: Path,
+    metrics: set[Metric] | None = None,
     site_correction: bool = False,
 ) -> dict[str, Any]:
     """Compute all QC metrics for a single group of connectivity matrices."""
@@ -192,106 +190,94 @@ def make_record(
         else:
             logger.info(f"Skipping subject {sub}: not found in phenotype file.")
 
-    #  Renaming for consistency
+    # Renaming for consistency
     connectivity_matrices[:] = filtered
-
-    # Slice phenotypes (age, gender, etc.) for just this group
     seg_data_frame = data_frame.loc[seg_subjects]
-    qcfc = calculate_qcfc(seg_data_frame, connectivity_matrices, metric_key, site_correction)
 
     (seg,) = index.get_tag_values(seg_key, {c.path for c in connectivity_matrices})
     distance_matrix = distance_matrices[seg]
-
-    gcor = calculate_gcor(connectivity_matrices)
-
-    dmn_similarity_summary, t_stats_dmn_vis_fpn = network_similarity(connectivity_matrices, region_memberships[seg])
     atlas = atlases[seg].image
 
-    record = dict(
-        median_absolute_qcfc=calculate_median_absolute(qcfc.correlation),
-        percentage_significant_qcfc=calculate_qcfc_percentage(qcfc),
-        distance_dependence=calculate_distance_dependence(qcfc, distance_matrix),
-        gcor=gcor,
-        dmn_similarity=dmn_similarity_summary,
-        dmn_vis_distance_vs_dmn_fpn=t_stats_dmn_vis_fpn,
+    record: dict[str, Any] = dict(
+        # Motion
+        median_absolute_qcfc=np.nan,
+        percentage_significant_qcfc=np.nan,
+        distance_dependence=np.nan,
+        gcor=np.nan,
+        # Analytic insights
+        dmn_similarity_std=np.nan,
+        dmn_similarity_mean=np.nan,
+        dmn_vis_distance_vs_dmn_fpn=np.nan,
+        # Gradients
+        gradients_similarity=np.nan,
+        # Prediction
+        sex_auc=np.nan,
+        sex_auc_ci_lower=np.nan,
+        sex_auc_ci_upper=np.nan,
+        sex_accuracy=np.nan,
+        age_mae=np.nan,
+        age_mae_ci_lower=np.nan,
+        age_mae_ci_upper=np.nan,
+        age_r2=np.nan,
+        # Degrees of freedom loss
         **calculate_degrees_of_freedom_loss(connectivity_matrices)._asdict(),
     )
 
-    if disable_prediction_gradient:
-        logger.info("Light mode enabled - skipping age and sex prediction, gradient similarity.")
+    if metrics is None:
+        raise ValueError("Metrics set is not specified")
+
+    if "motion" in metrics:
+        qcfc = calculate_qcfc(seg_data_frame, connectivity_matrices, metric_key, site_correction)
         record.update(
-            dict(
-                sex_auc=np.nan,
-                sex_auc_ci_lower=np.nan,
-                sex_auc_ci_upper=np.nan,
-                sex_accuracy=np.nan,
-                age_mae=np.nan,
-                age_mae_ci_lower=np.nan,
-                age_mae_ci_upper=np.nan,
-                age_r2=np.nan,
-                gradients_similarity=np.nan,
-            )
-        )  # place holders
-        return record
-    # Gradient similarity
-    gradients, gradients_group = extract_gradients(connectivity_matrices, atlas)
-    record["gradients_similarity"] = calculate_gradients_similarity(gradients, gradients_group)
-
-    # age / sex predictability metrics
-    try:
-        ages = seg_data_frame["age"].to_numpy()
-        genders = seg_data_frame["gender"].to_numpy()
-        sites = seg_data_frame["site"].to_numpy() if site_correction else None
-
-        scores = age_sex_scores(
-            connectivity_matrices,
-            ages=ages,
-            genders=genders,
-            sites=sites,
-            n_splits=_DEFAULT_N_SPLITS,
-            random_state=42,
-            n_pca=_DEFAULT_N_PCA,
-            n_jobs=_DEFAULT_N_JOBS,
+            median_absolute_qcfc=calculate_median_absolute(qcfc.correlation),
+            percentage_significant_qcfc=calculate_qcfc_percentage(qcfc),
+            distance_dependence=calculate_distance_dependence(qcfc, distance_matrix),
         )
 
-        # scores is:
-        # {
-        #   "sex_auc": float,
-        #   "sex_auc_ci_lower": float,
-        #   "sex_auc_ci_upper": float,
-        #   "sex_accuracy": float,
-        #   "age_mae": float,
-        #   "age_mae_ci_lower": float,
-        #   "age_mae_ci_upper": float,
-        #   "age_r2": float,
-        # }
-        record.update(scores)
-
-    except (ValueError, np.linalg.LinAlgError) as exc:
-        logger.warning(f"[age_sex_prediction] Skipping age/sex prediction for this group due to error: {exc!r}")
-        # If it fails, we still want consistent columns in the output.
+    if "analytic-insights" in metrics:
+        gcor = calculate_gcor(connectivity_matrices)
+        dmn_similarity_summary, t_stats_dmn_vis_fpn = network_similarity(connectivity_matrices, region_memberships[seg])
+        dmn_similarity_summary.to_csv(dmn_similarity_path, sep="\t")
         record.update(
-            dict(
-                sex_auc=np.nan,
-                sex_auc_ci_lower=np.nan,
-                sex_auc_ci_upper=np.nan,
-                sex_accuracy=np.nan,
-                age_mae=np.nan,
-                age_mae_ci_lower=np.nan,
-                age_mae_ci_upper=np.nan,
-                age_r2=np.nan,
-            )
+            gcor=gcor,
+            dmn_similarity_std=dmn_similarity_summary.loc[:, "corr_with_dmn"].std(),
+            dmn_similarity_mean=dmn_similarity_summary.loc[:, "corr_with_dmn"].mean(),
+            dmn_vis_distance_vs_dmn_fpn=t_stats_dmn_vis_fpn,
         )
+
+    if "gradients" in metrics:
+        gradients, gradients_group = extract_gradients(connectivity_matrices, atlas)
+        record["gradients_similarity"] = calculate_gradients_similarity(gradients, gradients_group)
+
+    if "prediction" in metrics:
+        try:
+            record.update(
+                age_sex_scores(
+                    connectivity_matrices,
+                    ages=seg_data_frame["age"].to_numpy(),
+                    genders=seg_data_frame["gender"].to_numpy(),
+                    sites=seg_data_frame["site"].to_numpy() if site_correction else None,
+                    n_splits=_DEFAULT_N_SPLITS,
+                    random_state=42,
+                    n_pca=_DEFAULT_N_PCA,
+                    n_jobs=_DEFAULT_N_JOBS,
+                )
+            )
+        except (ValueError, np.linalg.LinAlgError) as exc:
+            logger.warning(f"[age_sex_prediction] Skipping age/sex prediction for this group due to error: {exc!r}")
 
     return record
 
 
-def load_data_frame(args: argparse.Namespace) -> pd.DataFrame:
+def load_data_frame(config: WonkyconnConfig) -> pd.DataFrame:
     """Load a phenotype TSV with ``participant_id``, ``gender``, and ``age`` columns.
     If site correction is enabled, the ``site`` column is also required.
     """
+    path = config.phenotypes
+    if path is None:
+        raise ValueError("Phenotypes file path is not specified in the configuration")
     data_frame = pd.read_csv(
-        args.phenotypes,
+        path,
         sep="\t",
         index_col="participant_id",
         dtype={"participant_id": str},
@@ -300,7 +286,7 @@ def load_data_frame(args: argparse.Namespace) -> pd.DataFrame:
         raise ValueError('Phenotypes file is missing the "gender" column')
     if "age" not in data_frame.columns:
         raise ValueError('Phenotypes file is missing the "age" column')
-    if args.site_correction:
+    if config.site_correction:
         logger.info("Site correction is enabled - checking for 'site' column in phenotypes file.")
         if "site" not in data_frame.columns:
             raise ValueError('Phenotypes file is missing the "site" column required for site correction')

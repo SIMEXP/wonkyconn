@@ -39,23 +39,6 @@ def plot(records: list[dict[str, Any]], group_by: list[str], output_dir: Path) -
         group_by (list[str]): The list of columns that the results are grouped by.
         output_dir (Path): The directory to save the plot image into as "metrics.png".
     """
-    # separate dmn similarity from the rest of the metrics
-    dmn_sim_array = []
-    for record in records:
-        df_dmn_similarity = record.pop("dmn_similarity")
-        for g in group_by:
-            df_dmn_similarity[g] = record[g]
-        dmn_sim_array.append(df_dmn_similarity[["corr_with_dmn"] + group_by])
-
-    df_dmn_sim_array = pd.concat(dmn_sim_array, ignore_index=True)
-    if len(group_by) == 2:
-        df_dmn_sim_array["group_labels"] = df_dmn_sim_array[group_by].apply(lambda x: "-".join(x.astype(str)), axis=1)
-    else:
-        df_dmn_sim_array["group_labels"] = df_dmn_sim_array[group_by[0]]
-
-    # summarize the info
-    for record, dmn_sim in zip(records, dmn_sim_array, strict=True):
-        record["dmn_similarity"] = dmn_sim["corr_with_dmn"].mean()
     result_frame = pd.DataFrame.from_records(records, index=group_by)
     data_frame = result_frame.reset_index()
     if len(group_by) == 2:  # halfpipe
@@ -113,7 +96,7 @@ def plot(records: list[dict[str, Any]], group_by: list[str], output_dir: Path) -
     gcor_axes.set_title("Global correlation (GCOR)")
     gcor_axes.set_xlabel("Mean correlation")
 
-    sns.barplot(data=df_dmn_sim_array, y="group_labels", x="corr_with_dmn", color=palette[4], ax=dmn_mean_axes, errorbar="sd")
+    sns.barplot(data=data_frame, y="group_labels", x="dmn_similarity_mean", color=palette[4], ax=dmn_mean_axes, errorbar="sd")
     dmn_mean_axes.set_title("Similarity with DMN")
     dmn_mean_axes.set_xlabel("Mean correlation")
 
@@ -181,7 +164,7 @@ def plot_degrees_of_freedom_loss(
     result_frame: pd.DataFrame,
     degrees_of_freedom_loss_axes: Axes,
     legend_axes: Axes,
-    colors: list[str],
+    colors: list[Any],
 ) -> None:
     """Plot stacked bars showing degrees-of-freedom loss by source."""
     sns.barplot(

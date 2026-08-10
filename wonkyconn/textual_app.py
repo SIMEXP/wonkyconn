@@ -21,7 +21,7 @@ from textual.widgets._directory_tree import DirEntry
 from textual.widgets._select import NoSelection
 from textual.widgets._tree import Tree
 
-from .config import WonkyconnConfig
+from .config import WonkyconnConfig, all_metrics, light_mode_metrics
 
 
 class WonkyConnApp(App[WonkyconnConfig | None]):
@@ -356,7 +356,7 @@ class WonkyConnApp(App[WonkyconnConfig | None]):
             atlas=[(atlas_label, atlas_path)],
             verbosity=verbosity,
             debug=debug,
-            light_mode=light_mode,
+            metrics=light_mode_metrics if light_mode else all_metrics,
             theme="dark" if self.dark else "light",
             suppress_warnings=suppress_warnings,
         )
