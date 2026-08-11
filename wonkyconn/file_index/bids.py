@@ -102,6 +102,7 @@ def parse(path: Path) -> dict[str, str] | None:
 
 class BIDSIndex(FileIndex):
     def put(self, root: Path) -> None:
+        self._invalidate_caches()
         for path in root.glob("**/*"):
             tags = parse(path)
 

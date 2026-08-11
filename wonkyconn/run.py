@@ -3,12 +3,23 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 from . import __version__
 from .config import WonkyconnConfig
 from .logger import logger
 from .workflow import workflow
+
+
+class VerbosityAction(argparse.Action):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Any,
+        option_string: str | None = None,
+    ) -> None:
+        namespace.log_level = {0: "ERROR", 1: "WARNING", 2: "INFO", 3: "DEBUG"}[values]
 
 
 def global_parser(exit_on_error: bool = True) -> argparse.ArgumentParser:
@@ -57,32 +68,46 @@ def global_parser(exit_on_error: bool = True) -> argparse.ArgumentParser:
         help="Specify the atlas label and the path to the atlas file (for example --atlas Schaefer2018 /path/to/atlas.nii.gz)",
     )
 
-    parser.add_argument("-v", "--version", action="version", version=__version__)
-    parser.add_argument("--debug", action="store_true", default=False)
-    parser.add_argument(
+    metrics_group = parser.add_mutually_exclusive_group(required=False)
+    metrics_group.add_argument(
         "--light-mode",
         required=False,
         action="store_true",
         default=False,
         help="Disable sex and age prediction to reduce runtime.",
     )
+    metrics = ["motion", "analytic-insights", "gradients", "prediction"]
+    metrics_group.add_argument(
+        "--metrics",
+        required=False,
+        nargs="+",
+        choices=metrics,
+        default=metrics,
+    )
+
+    logging_group = parser.add_mutually_exclusive_group(required=False)
+    logging_group.add_argument(
+        "--verbosity",
+        choices=[0, 1, 2, 3],
+        type=int,
+        action=VerbosityAction,
+    )
+    logging_group.add_argument(
+        "--log-level",
+        required=False,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        default="INFO",
+        type=str,
+    )
+
+    parser.add_argument("-v", "--version", action="version", version=__version__)
+    parser.add_argument("--debug", action="store_true", default=False)
     parser.add_argument(
         "--site-correction",
         required=False,
         action="store_true",
         default=False,
         help="Apply site correction to the data.",
-    )
-    parser.add_argument(
-        "--verbosity",
-        help="""
-        Verbosity level.
-        """,
-        required=False,
-        choices=[0, 1, 2, 3],
-        default=2,
-        type=int,
-        nargs=1,
     )
     parser.add_argument(
         "--textual",
@@ -147,30 +172,28 @@ def main(argv: None | Sequence[str] = None) -> None:
     if use_gui:
         _loosen_parser_for_gui(parser)
 
-    parsed_args: argparse.Namespace | None
+    args: argparse.Namespace | None
     try:
-        parsed_args = parser.parse_args(raw_args)
+        args = parser.parse_args(raw_args)
     except SystemExit as exc:
         if use_gui and exc.code != 0:
-            parsed_args = None
+            args = None
         else:
             raise
     except argparse.ArgumentError:
         if not use_gui:
             raise
-        parsed_args = None
+        args = None
 
     if use_gui:
-        initial_config = _build_initial_config(parsed_args)
-        result_config = _run_textual_ui(initial_config)
-        if result_config is None:
+        initial_config = _build_initial_config(args)
+        config = _run_textual_ui(initial_config)
+        if config is None:
             return
-        args_for_workflow = result_config.to_namespace()
-        debug_enabled = result_config.debug
-        suppress_warnings = result_config.suppress_warnings
+        debug_enabled = config.debug
+        suppress_warnings = config.suppress_warnings
     else:
-        config = _build_initial_config(parsed_args)
-        args_for_workflow = config.to_namespace()
+        config = _build_initial_config(args)
         debug_enabled = config.debug
         suppress_warnings = config.suppress_warnings
 
@@ -180,7 +203,7 @@ def main(argv: None | Sequence[str] = None) -> None:
         warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     try:
-        workflow(args_for_workflow)
+        workflow(config)
     except Exception as e:
         logger.exception("Exception: %s", e, exc_info=True)
         if debug_enabled:

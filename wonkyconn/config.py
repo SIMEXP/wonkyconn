@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Literal, TypeAlias
 
 
 def _coerce_path(value: str | Path | None) -> Path | None:
@@ -11,6 +11,12 @@ def _coerce_path(value: str | Path | None) -> Path | None:
     if value is None:
         return None
     return Path(value).expanduser().resolve()
+
+
+Metric: TypeAlias = Literal["motion", "analytic-insights", "gradients", "prediction"]
+
+light_mode_metrics: set[Metric] = {"motion", "analytic-insights"}
+all_metrics: set[Metric] = {"motion", "analytic-insights", "gradients", "prediction"}
 
 
 @dataclass
@@ -22,12 +28,16 @@ class WonkyconnConfig:
     analysis_level: str = "group"
     phenotypes: Path | None = None
     atlas: list[tuple[str, Path]] = field(default_factory=list)
-    verbosity: int = 2
+    log_level: str | None = None
     debug: bool = False
-    light_mode: bool = False
+    metrics: set[Metric] | None = None
     theme: str | None = None  # GUI-only
     suppress_warnings: bool = False
     site_correction: bool = False
+
+    @property
+    def light_mode(self) -> bool:
+        return self.metrics == light_mode_metrics
 
     @classmethod
     def from_cli_args(cls, args: argparse.Namespace | None) -> "WonkyconnConfig":
@@ -35,13 +45,11 @@ class WonkyconnConfig:
         if args is None:
             return cls()
 
-        verbosity = args.verbosity
-        if isinstance(verbosity, Sequence) and not isinstance(verbosity, (str, bytes)):
-            verbosity = verbosity[0]
-
         atlas_entries: list[tuple[str, Path]] = list()
         for label, atlas_path in args.atlas or []:
             atlas_entries.append((label, Path(atlas_path).expanduser().resolve()))
+
+        metrics: set[Metric] = light_mode_metrics if args.light_mode else set(args.metrics)
 
         return cls(
             bids_dir=_coerce_path(args.bids_dir),
@@ -49,33 +57,9 @@ class WonkyconnConfig:
             analysis_level=args.analysis_level,
             phenotypes=_coerce_path(args.phenotypes),
             atlas=atlas_entries,
-            verbosity=int(verbosity) if verbosity is not None else 2,
+            log_level=args.log_level,
             debug=bool(args.debug),
-            light_mode=bool(args.light_mode),
+            metrics=metrics,
             suppress_warnings=bool(args.suppress_warnings),
             site_correction=bool(args.site_correction),
-        )
-
-    def to_namespace(self) -> argparse.Namespace:
-        """Convert to argparse.Namespace expected by workflow."""
-        if self.bids_dir is None:
-            raise ValueError("bids_dir is required")
-        if self.output_dir is None:
-            raise ValueError("output_dir is required")
-        if self.phenotypes is None:
-            raise ValueError("phenotypes is required")
-        if not self.atlas:
-            raise ValueError("At least one atlas entry is required")
-
-        atlas_as_str: Iterable[tuple[str, str]] = ((label, str(path)) for label, path in self.atlas)
-        return argparse.Namespace(
-            bids_dir=self.bids_dir,
-            output_dir=self.output_dir,
-            analysis_level=self.analysis_level,
-            phenotypes=str(self.phenotypes),
-            atlas=list(atlas_as_str),
-            verbosity=self.verbosity,
-            debug=self.debug,
-            light_mode=self.light_mode,
-            site_correction=self.site_correction,
         )
