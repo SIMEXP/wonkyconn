@@ -77,12 +77,13 @@ def global_parser(exit_on_error: bool = True) -> argparse.ArgumentParser:
         help="Disable sex and age prediction to reduce runtime.",
     )
     metrics = ["motion", "analytic-insights", "gradients", "prediction"]
+    default_metrics = ["motion", "analytic-insights", "prediction"]
     metrics_group.add_argument(
         "--metrics",
         required=False,
         nargs="+",
         choices=metrics,
-        default=metrics,
+        default=default_metrics,
     )
 
     logging_group = parser.add_mutually_exclusive_group(required=False)
