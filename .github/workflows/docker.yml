@@ -65,6 +65,11 @@ jobs:
       # Always use light mode for testing container since the full version was tested during build
       - name: Test container build with data
         run: |
+          docker run --rm \
+            --mount="type=bind,source=${{ github.workspace }},target=${{ github.workspace }}" \
+            --workdir="${{ github.workspace }}" \
+            wonky:conn \
+            --help
           datalad get data/halfpipe data/atlases
           docker run --rm \
             --mount="type=bind,source=${{ github.workspace }},target=${{ github.workspace }}" \
