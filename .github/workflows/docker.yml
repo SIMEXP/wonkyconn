@@ -65,7 +65,10 @@ jobs:
       # Always use light mode for testing container since the full version was tested during build
       - name: Test container build with data
         run: |
-          docker exec wonky:conn ls -la /app/.pixi/envs/wonkyconn/bin/
+          docker run -d --name test-container wonky:conn sleep infinity
+          docker exec test-container ls -la /app/.pixi/envs/wonkyconn/bin/
+          docker stop test-container
+          docker rm test-container
           datalad get data/halfpipe data/atlases
           docker run --rm \
             --mount="type=bind,source=${{ github.workspace }},target=${{ github.workspace }}" \
