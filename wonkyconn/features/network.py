@@ -4,6 +4,7 @@ from __future__ import (
     annotations,
 )
 
+import warnings
 from typing import Tuple
 
 import numpy as np
@@ -45,8 +46,8 @@ def single_subject_within_network_connectivity(
         roi_index -= 1
 
     # calculate similarity of the thresholded individual level seed based connectivity with the binary mask
-    subj_average_connectivity_within_network = []
-    subj_variance_connectivity_within_network = []
+    subj_average_connectivity_within_network_list = []
+    subj_variance_connectivity_within_network_list = []
     subj_corr_with_network = []
     for idx_roi in roi_index:
         seed_based_map = connectivity_matrix.load()[int(idx_roi), :]
@@ -57,8 +58,10 @@ def single_subject_within_network_connectivity(
         ]
         networks = np.asarray(isolate_parcel)
         networks[networks == 0] = np.nan
-        mean_within_network_connection = np.nanmean(networks, axis=1)
-        std_within_network_connection = np.nanstd(networks, axis=1)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            mean_within_network_connection = np.nanmean(networks, axis=1)
+            std_within_network_connection = np.nanstd(networks, axis=1)
 
         # Remove rows with NaN values
         mask = np.array(
@@ -68,21 +71,23 @@ def single_subject_within_network_connectivity(
             ]
         )
 
-        correlation_with_given_network = np.corrcoef(
-            seed_based_map[mask], region_membership[f"yeo7-{yeo_network_index}"].to_numpy()[mask]
-        )
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            correlation_with_given_network = np.corrcoef(
+                seed_based_map[mask], region_membership[f"yeo7-{yeo_network_index}"].to_numpy()[mask]
+            )
 
-        subj_average_connectivity_within_network.append(mean_within_network_connection)
-        subj_variance_connectivity_within_network.append(std_within_network_connection)
+        subj_average_connectivity_within_network_list.append(mean_within_network_connection)
+        subj_variance_connectivity_within_network_list.append(std_within_network_connection)
         subj_corr_with_network.append(correlation_with_given_network[1, 0])
 
     # summarise of the given subject
-    subj_average_connectivity_within_network = np.asarray(subj_average_connectivity_within_network).mean(axis=0)
-    subj_variance_connectivity_within_network = np.asarray(subj_variance_connectivity_within_network).mean(axis=0)
+    subj_average_connectivity_within_network = np.asarray(subj_average_connectivity_within_network_list).mean(axis=0)
+    subj_variance_connectivity_within_network = np.asarray(subj_variance_connectivity_within_network_list).mean(axis=0)
     return (
         subj_average_connectivity_within_network,
         subj_variance_connectivity_within_network,
-        np.nanmean(subj_corr_with_network),
+        np.nanmean(subj_corr_with_network),  # pyright: ignore[reportReturnType]
     )
 
 

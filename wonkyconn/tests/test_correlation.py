@@ -15,7 +15,7 @@ def test_correlation() -> None:
     y = np.random.normal(size=(m,))
     cov = np.random.normal(size=(m, 2))
 
-    correlation, count = partial_correlation(x, y, cov)
+    correlation, count = partial_correlation(x, y, cov)  # pyright: ignore[reportCallIssue]
     p_value = correlation_p_value(correlation, count)
 
     assert np.all(np.isfinite(correlation))

@@ -98,5 +98,5 @@ def calculate_for_key(
         else:
             raise ValueError(f"Unexpected value for `{keys}`: {value}")
 
-    percentages = pd.Series(proportions) * 100
+    percentages: pd.Series = pd.Series(proportions) * 100
     return percentages.mean()

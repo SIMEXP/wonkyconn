@@ -20,6 +20,7 @@ def calculate_qcfc(
     data_frame: pd.DataFrame,
     connectivity_matrices: Iterable[ConnectivityMatrix],
     metric_key: str = "MeanFramewiseDisplacement",
+    site_correction: bool = False,
 ) -> pd.DataFrame:
     """
     metric calculation: quality control / functional connectivity
@@ -27,13 +28,16 @@ def calculate_qcfc(
     For each edge, we then computed the correlation between the weight of
     that edge and the mean relative RMS motion.
     QC-FC relationships were calculated as partial correlations that
-    accounted for participant age and sex
+    accounted for participant age and sex (and site when ``site_correction`` is enabled).
 
     Parameters:
         data_frame (pd.DataFrame): The data frame containing the covariates "age" and "gender".
+                                   "site" is also required if site correction is applied.
                                    It needs to have one row for each connectivity matrix.
         connectivity_matrices (Iterable[ConnectivityMatrix]): The connectivity matrices to calculate QCFC for.
         metric_key (str, optional): The key of the metric to use for QCFC calculation. Defaults to "MeanFramewiseDisplacement".
+        site_correction (bool, optional): If True, include site as an additional covariate
+                                   (requires a "site" column in ``data_frame``). Defaults to False.
 
     Returns:
         pd.DataFrame: The QCFC values between connectivity matrices and the metric.
@@ -44,7 +48,10 @@ def calculate_qcfc(
     )
     if np.isnan(metrics).all():
         raise ValueError(f"None of the connectivity matrices have a metric with key '{metric_key}'")
-    covariates = np.asarray(dmatrix("age + gender", data_frame))
+    if site_correction:
+        covariates = np.asarray(dmatrix("age + C(gender) + C(site)", data_frame))
+    else:
+        covariates = np.asarray(dmatrix("age + C(gender)", data_frame))
 
     connectivity_arrays = [
         connectivity_matrix.load()
@@ -65,7 +72,8 @@ def calculate_qcfc(
         axis=1,
     )
 
-    correlation, count = partial_correlation(connectivity_array, metrics, covariates)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        correlation, count = partial_correlation(connectivity_array, metrics, covariates)  # pyright: ignore[reportCallIssue]
     p_value = correlation_p_value(correlation, count)
 
     qcfc = pd.DataFrame(dict(i=i, j=j, correlation=correlation, p_value=p_value))
@@ -95,7 +103,7 @@ def significant_level(x: "pd.Series[float]", alpha: float = 0.05, correction: st
         res, _, _, _ = multipletests(x, alpha=alpha, method=correction)
     else:
         res = x < alpha
-    return res
+    return np.asarray(res)
 
 
 def calculate_qcfc_percentage(qcfc: pd.DataFrame) -> float:

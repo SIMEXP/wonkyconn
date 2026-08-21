@@ -164,13 +164,18 @@ warn_unused_ignores = true
 ignore_missing_imports = true
 module = [
   "bids.*",
+  "brainspace.*",
   "datalad.*",
+  "joblib",
   "matplotlib.*",
+  "nilearn",
+  "nilearn.*",
   "numba.*",
   "patsy.*",
   "rich.*",
   "scipy.*",
   "seaborn.*",
+  "sklearn.*",
   "statsmodels.*",
   "templateflow.*",
   "nibabel.*",
