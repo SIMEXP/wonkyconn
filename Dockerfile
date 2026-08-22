@@ -10,7 +10,7 @@ COPY wonkyconn/ ./wonkyconn/
 
 # Install all dependencies and build the package in one go
 RUN --mount=type=cache,target=/root/.cache/rattler \
-    pixi install --environment wonkyconn --environment test --frozen
+    pixi install --environment wonkyconn --frozen
 
 # Base runtime image
 FROM ubuntu:rolling AS base
