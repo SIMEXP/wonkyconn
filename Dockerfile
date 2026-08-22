@@ -18,11 +18,14 @@ COPY wonkyconn/ /app/wonkyconn/
 RUN --mount=type=cache,target=/root/.cache/rattler \
     pixi install --environment wonkyconn --environment test --frozen
 
+# base version
 FROM ubuntu:rolling AS base
 
 RUN useradd --create-home --shell /bin/bash --groups users wonkyconn
 WORKDIR /home/wonkyconn
 ENV HOME="/home/wonkyconn"
+
+# test version
 FROM base AS test
 
 COPY --link --from=build /app/.pixi/envs/test /app/.pixi/envs/test
@@ -30,6 +33,7 @@ RUN --mount=type=bind,from=build,source=/test-shell-hook.sh,target=/shell-hook.s
     cat /shell-hook.sh >> "${HOME}/.bashrc"
 ENV PATH="/app/.pixi/envs/test/bin:$PATH"
 
+# production version
 FROM base AS wonkyconn
 
 COPY --link --from=build /app/.pixi/envs/wonkyconn /app/.pixi/envs/wonkyconn
@@ -37,4 +41,4 @@ RUN --mount=type=bind,from=build,source=/shell-hook.sh,target=/shell-hook.sh \
     cat /shell-hook.sh >> "${HOME}/.bashrc"
 ENV PATH="/app/.pixi/envs/wonkyconn/bin:$PATH"
 
-ENTRYPOINT ["/app/.pixi/envs/wonkyconn/bin/wonkyconn"]
+ENTRYPOINT ["wonkyconn"]
