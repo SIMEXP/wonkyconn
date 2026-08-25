@@ -10,6 +10,7 @@ from nilearn.connectome import sym_matrix_to_vec
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
+from sklearn.feature_selection import VarianceThreshold
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.model_selection import StratifiedShuffleSplit, cross_validate
@@ -143,8 +144,7 @@ def training_pipeline(
     ]
 
     steps: list[tuple[str, BaseEstimator]] = [
-        # keep_empty_features=True avoids sklearn's "Skipping features without any
-        # observed values" warning.
+        # keep_empty_features=True avoids sklearn's "Skipping features without any observed values" warning
         ("imputer", SimpleImputer(strategy="median", keep_empty_features=True).set_output(transform="pandas")),
     ]
 
@@ -153,6 +153,7 @@ def training_pipeline(
 
     steps.extend(
         [
+            ("variance_threshold", VarianceThreshold(threshold=1e-6)),
             ("scaler", StandardScaler()),
             (
                 "pca",
