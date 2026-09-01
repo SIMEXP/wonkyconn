@@ -31,7 +31,7 @@ jobs:
           git config --global user.name "halfpipe"
           git config --global user.email "halfpipe@fmri.science"
           git config --global datalad.runtime.max-annex-jobs "$(nproc)"
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476
