@@ -4,7 +4,7 @@
 
 **Released September 2026**
 
-This is the Beta release that is used to develop the material for a research paper publication. 
+This is the Beta release that is used to develop the material for a research paper publication.
 
 ### New
 
