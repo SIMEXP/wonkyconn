@@ -1,8 +1,10 @@
 # What’s new
 
-## 26.09.0-beta
+## 26.09.0b0
 
 **Released September 2026**
+
+This is the Beta release that is used to develop the material for a reasearch paper publication. 
 
 ### New
 
@@ -15,6 +17,7 @@
 - Fix stratification for numeric site columns (#2c17820).
 - Fix DMN similarity results being overwritten across groups. Each group now stores results in its own subdirectory (#3af2f83).
 - Fix age prediction for OASIS by removing low-variance features (#844eb6e).
+- Fix version naming modifier convention to match CalVer.
 
 ### Enhancements
 
