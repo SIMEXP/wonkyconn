@@ -9,17 +9,23 @@ Wonkyconn evaluates residual motion and analytic quality in group-level fMRI con
 
 The project is based on the code of [`SIMEXP/fmriprep-denoise-benchmark`](https://github.com/SIMEXP/fmriprep-denoise-benchmark) and the publication by [Wang et al. 2024](http://dx.doi.org/10.1371/journal.pcbi.1011942).
 
-**This project is in alpha stage! This is not a stable project yet.**
+**We are official at Beta stage and welcome user feedback!**
 
 ## Quick start
 
-Recommended container:
+Fetch the most recent stable release:
+
+```bash
+apptainer build wonkyconn-26.9.0b0.sif docker://halfpipe/wonkyconn:26.9.0b0
+```
+
+Fetch the container matching the main branch:
 
 ```bash
 apptainer build wonkyconn-edge.sif docker://halfpipe/wonkyconn:edge
 ```
 
-See the [documentation](https://wonkyconn.readthedocs.io/en/latest/) for usage, methods, and outputs.
+See the [documentation](https://wonkyconn.readthedocs.io/) for usage, methods, and outputs.
 
 ## Textual GUI (optional)
 

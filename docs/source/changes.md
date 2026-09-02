@@ -1,16 +1,35 @@
 # What’s new
 
-## 26.02.0+1.dev
+## 26.09.0b0
 
-**Released MONTH YEAR**
+**Released September 2026**
+
+This is the Beta release that is used to develop the material for a research paper publication.
 
 ### New
 
+- Add `--log-level` CLI flag as an alternative to `--verbosity` (#0801919).
+- Allow specifying specific metrics to run via CLI (#d12c792).
+- Add stratification by site to cross-validation sampler; simplify `SiteRegressor` using pandas DataFrames (#c5c593e).
+
 ### Fixes
+
+- Fix stratification for numeric site columns (#2c17820).
+- Fix DMN similarity results being overwritten across groups. Each group now stores results in its own subdirectory (#3af2f83).
+- Fix age prediction for OASIS by removing low-variance features (#844eb6e).
+- Fix version naming modifier convention to match CalVer.
 
 ### Enhancements
 
+- Ensure equal sampling of age quantiles across cross-validation folds (#108).
+- Downgrade subjects-only-in-subgroup error to a warning and exclude them from training (#e221347).
+- Improve index performance (#189a424).
+- Reduce log message verbosity (#b7cb04b).
+
 ### Changes
+
+- Remove gradients from default metrics (#fa08483).
+- Simplify Dockerfile build procedure (#135).
 
 ## 26.02.0-alpha
 
