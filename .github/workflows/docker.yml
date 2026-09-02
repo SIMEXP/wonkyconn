@@ -31,10 +31,10 @@ jobs:
           git config --global user.name "halfpipe"
           git config --global user.email "halfpipe@fmri.science"
           git config --global datalad.runtime.max-annex-jobs "$(nproc)"
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: mamba-org/setup-micromamba@d7c9bd84e824b79d2af72a2d4196c7f4300d3476
+      - uses: mamba-org/setup-micromamba@f457c30a868e4760d3a6fcea5f25dc655b8edf39
         with:
           condarc: |
             channels:
@@ -46,7 +46,7 @@ jobs:
           init-shell: bash
 
       - id: meta
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
         with:
           images: halfpipe/wonkyconn
           tags: |
@@ -74,7 +74,7 @@ jobs:
             --light-mode \
             data/halfpipe test group
 
-      - uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f
         # PRs from forks don't have access to secrets, disable this step in that case.
         if: github.event_name != 'pull_request'
         with:
